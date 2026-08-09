@@ -141,27 +141,6 @@ export default function Menu(props) {
           </div>
       </div>
 
-        {/* BLOC Patch Name */}
-
-        <div className="patch-name">
-          <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">PATCH NAME</label>
-          <input
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            placeholder="Patch Name"
-            type="text"
-            maxLength="12"
-            value={state.patch.name}
-            onChange={(e) => {
-              dispatch(
-                parameterUpdated({
-                  id: 'Patch',
-                  changes: { name: e.target.value },
-                })
-              );
-            }}
-          />
-        </div>
-
         {/* BLOC DOUBLE SÉLECTEUR MIDI */}
 
         <div className="my-1 flex flex-col space-y-3 bg-gray-100 p-2 rounded border border-gray-300">
@@ -201,6 +180,27 @@ export default function Menu(props) {
               )}
             </select>
           </div>
+        </div>
+
+        {/* BLOC Patch Name */}
+
+        <div className="patch-name">
+          <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">PATCH NAME</label>
+          <input
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            placeholder="Patch Name"
+            type="text"
+            maxLength="12"
+            value={state.patch.name}
+            onChange={(e) => {
+              dispatch(
+                parameterUpdated({
+                  id: 'Patch',
+                  changes: { name: e.target.value },
+                })
+              );
+            }}
+          />
         </div>
 
         {/* CONTENEUR DES BOUTONS D'ACTIONS */}
