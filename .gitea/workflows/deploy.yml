@@ -13,14 +13,25 @@ jobs:
     steps:
       - name: Deploy via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
+          # -tt : force l'affichage en direct des logs Docker
+          ssh -tt -o StrictHostKeyChecking=no -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr '
             cd /opt/alapatch &&
+            
+            echo "=== [1/4] Synchronisation avec Gitea ===" &&
             git fetch --all &&
             git reset --hard origin/main &&
-            docker build --no-cache -t alapatch-prod . &&
-            if [ \$(docker ps -aq -f name=microkorg-editor) ]; then
+            
+            echo "=== [2/4] Compilation de l-image Docker ===" &&
+            docker build -t alapatch-prod . &&
+            
+            echo "=== [3/4] Nettoyage de l-ancienne instance ===" &&
+            if [ $(docker ps -aq -f name=microkorg-editor) ]; then
               docker stop microkorg-editor &&
               docker rm microkorg-editor
             fi &&
-            docker run -d --restart unless-stopped -p 4321:4321 --name microkorg-editor alapatch-prod
-          "
+            
+            echo "=== [4/4] Lancement du nouvel éditeur ===" &&
+            docker run -d --restart unless-stopped -p 4321:4321 --name microkorg-editor alapatch-prod &&
+            
+            echo "=== DEPLOIMENT TERMINE AVEC SUCCES ==="
+          '
