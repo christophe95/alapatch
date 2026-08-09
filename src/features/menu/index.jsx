@@ -119,8 +119,12 @@ export default function Menu(props) {
   }, [state.patch.mode, dispatch]);
 
   return (
+
     <div className="h-screen col-span-1 flex flex-col justify-between border-solid border-r border-gray-300 bg-white px-2 py-2 text-xs">
       <div className="menu-patch-container">
+
+        {/* BLOC Patch Name */}
+
         <div className="patch-name">
           <input
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
@@ -140,6 +144,7 @@ export default function Menu(props) {
         </div>
 
         {/* BLOC DOUBLE SÉLECTEUR MIDI */}
+
         <div className="my-1 flex flex-col space-y-3 bg-gray-100 p-2 rounded border border-gray-300">
           <div className="flex flex-col space-y-1">
             <label htmlFor="midi-out-select" className="text-xs font-bold text-gray-500 uppercase">
@@ -183,6 +188,7 @@ export default function Menu(props) {
         </div>
 
         {/* CONTENEUR DES BOUTONS D'ACTIONS */}
+
         <div className="my-1 flex flex-col items-center space-y-2">
           <button
             className="btn bg-indigo-600 text-white hover:bg-indigo-700 w-full font-semibold"
@@ -192,49 +198,55 @@ export default function Menu(props) {
           >
             📥 Import from KORG
           </button>
-
-          <button
-            className="btn w-full"
-            onClick={() => {
-              dispatch(parameterRefreshAll());
-            }}
-          >
-            New Patch
-          </button>
-          
-          <button
-            className="btn w-full"
-            onClick={() => {
-              fileRef.current.click();
-            }}
-          >
-            Load Patch
-          </button>
-          
-          <button
-            className="btn w-full"
-            onClick={() => {
-              download(
-                return_file_from_store(state),
-                'microKORG_patch.syx',
-                'application/octet-binary'
-              );
-            }}
-          >
-            Save Patch
-          </button>
-          
-          <input
-            className="hidden"
-            type="file"
-            accept=".syx"
-            ref={fileRef}
-            onChange={(e) => {
-              loadFile(e.target.files[0]);
-            }}
-          />
         </div>
-        
+
+      {/* CONTENEUR DES BOUTONS D'ACTIONS */}
+
+      <div className="my-1">
+        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+          Patch
+      </div>
+
+      <div className="grid grid-cols-3 gap-1">
+        <button
+          className="btn w-full"
+          onClick={() => dispatch(parameterRefreshAll())}
+        >
+          New
+        </button>
+
+        <button
+          className="btn w-full"
+          onClick={() => fileRef.current.click()}
+        >
+          Load
+        </button>
+
+        <button
+          className="btn w-full"
+          onClick={() => {
+            download(
+              return_file_from_store(state),
+              'microKORG_patch.syx',
+              'application/octet-binary'
+            );
+          }}
+        >
+          Save
+        </button>
+      </div>
+
+      <input
+        className="hidden"
+        type="file"
+        accept=".syx"
+        ref={fileRef}
+        onChange={(e) => loadFile(e.target.files[0])}
+      />
+    </div>
+
+      {/* liste single,multiple,vocoder */}
+
         <div className="patch-settings">
           <Select
             className="w-full select"
@@ -256,6 +268,8 @@ export default function Menu(props) {
         </div>
       </div>
 
+      {/* 2 boutons Editor / Memory */}
+
       <div className="my-1 flex gap-1 w-full">
         <button
           className={props.page === 'editor' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
@@ -271,6 +285,8 @@ export default function Menu(props) {
          Memory
         </button>
       </div>
+
+      {/* Choix Timbre 1, Timbre 2, Vocoder, Arp/FX */}
 
       <div className="my-2 flex flex-col items-center space-y-2">
         <button
@@ -311,6 +327,7 @@ export default function Menu(props) {
       </div>
 
       {/* LA PETITE CONSOLE DU MONITEUR MIDI HEXADÉCIMAL */}
+
       <div className="my-1 flex flex-col flex-grow h-32 w-full bg-black text-gray-300 font-mono text-[10px] p-2 rounded overflow-y-auto border border-gray-700 shadow-inner">
         <div className="text-gray-500 font-bold border-b border-gray-800 pb-1 mb-1 sticky top-0 bg-black uppercase tracking-wider text-[9px]">
           Moniteur MIDI Activity
