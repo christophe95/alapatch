@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-// Import des nouvelles fonctions d'aiguillage In/Out
-import { initWebMidi, changeMidiOutputPort, changeMidiInputPort } from '../../utils/midiHelper';
+// Ajout de registerMidiLogger dans les imports
+import { initWebMidi, changeMidiOutputPort, changeMidiInputPort, registerMidiLogger } from '../../utils/midiHelper';
 import { Select } from '../utils/components';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -18,6 +18,11 @@ export default function Menu() {
   const [midiInputs, setMidiInputs] = useState([]);
   const [activeOutId, setActiveOutId] = useState('');
   const [activeInId, setActiveInId] = useState('');
+  
+  // Nouvel état local pour stocker l'historique des octets MIDI
+  const [midiLogs, setMidiLogs] = useState([]);
+  const consoleBottomRef = useRef(null);
+
   const [file, setFile] = useState(null);
   const fileRef = useRef(null);
   
@@ -26,16 +31,31 @@ export default function Menu() {
   const dispatch = useDispatch();
   const reader = new FileReader();
 
-  // Chargement des listes de câbles d'entrée et de sortie
   useEffect(() => {
+    // Initialisation des ports
     initWebMidi().then(midiData => {
       setMidiOutputs(midiData.outputs);
       setMidiInputs(midiData.inputs);
-      
       if (midiData.outputs.length > 0) setActiveOutId(midiData.outputs[0].id);
       if (midiData.inputs.length > 0) setActiveInId(midiData.inputs[0].id);
     });
+
+    // Branchement de notre console sur le Helper MIDI
+    registerMidiLogger((newLog) => {
+      setMidiLogs((prevLogs) => {
+        const updatedLogs = [...prevLogs, newLog];
+        // Conserve uniquement les 30 derniers messages pour éviter de saturer la mémoire
+        return updatedLogs.slice(-30);
+      });
+    });
   }, []);
+
+  // Force le défilement automatique vers le bas de la console lors d'un flux d'octets
+  useEffect(() => {
+    if (consoleBottomRef.current) {
+      consoleBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [midiLogs]);
 
   const handleMidiOutChange = (e) => {
     const portId = e.target.value;
@@ -72,7 +92,7 @@ export default function Menu() {
   }, [state.patch.mode, dispatch]);
 
   return (
-    <div className="h-screen col-span-1 flex flex-col justify-around border-solid border-r border-gray-300 bg-white px-4">
+    <div className="h-screen col-span-1 flex flex-col justify-between border-solid border-r border-gray-300 bg-white px-4 py-4">
       <div className="menu-patch-container">
         <div className="patch-name">
           <input
@@ -92,9 +112,8 @@ export default function Menu() {
           />
         </div>
 
-        {/* BLOC DOUBLE SÉLECTEUR MIDI (IN & OUT) */}
+        {/* BLOC DOUBLE SÉLECTEUR MIDI */}
         <div className="my-3 flex flex-col space-y-3 bg-gray-100 p-2 rounded border border-gray-300">
-          {/* Section SORTIE (MIDI Out) */}
           <div className="flex flex-col space-y-1">
             <label htmlFor="midi-out-select" className="text-xs font-bold text-gray-500 uppercase">
               MIDI Out (Vers Synthé) :
@@ -115,7 +134,6 @@ export default function Menu() {
             </select>
           </div>
 
-          {/* Section ENTRÉE (MIDI In) */}
           <div className="flex flex-col space-y-1">
             <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">
               MIDI In (Depuis Synthé) :
@@ -196,7 +214,8 @@ export default function Menu() {
           />
         </div>
       </div>
-      <div className="my-1 flex flex-col items-center space-y-2">
+
+      <div className="my-2 flex flex-col items-center space-y-2">
         <button
           disabled={state.patch.mode === 'Vocoder'}
           className={activeTab === 'Timbre1' ? `btn btn-active` : `btn`}
@@ -233,9 +252,32 @@ export default function Menu() {
           Arp/FX
         </button>
       </div>
-      <div className="w-full text-center text-xl font-semibold">
-        <span className="text-3xl pb-6">Alapatch</span> <br /> A microKORG Patch
-        Editor
+
+      {/* LA PETITE CONSOLE DU MONITEUR MIDI HEXADÉCIMAL */}
+      <div className="my-2 flex flex-col flex-grow h-32 w-full bg-black text-gray-300 font-mono text-[10px] p-2 rounded overflow-y-auto border border-gray-700 shadow-inner">
+        <div className="text-gray-500 font-bold border-b border-gray-800 pb-1 mb-1 sticky top-0 bg-black uppercase tracking-wider text-[9px]">
+          Moniteur MIDI Activity
+        </div>
+        <div className="flex-grow overflow-y-auto space-y-0.5">
+          {midiLogs.length === 0 ? (
+            <div className="text-gray-600 italic">Aucun flux détecté...</div>
+          ) : (
+            midiLogs.map((log, idx) => (
+              <div 
+                key={idx} 
+                className={log.type === 'in' ? 'text-emerald-400' : 'text-cyan-400'}
+              >
+                {log.text}
+              </div>
+            ))
+          )}
+          <div ref={consoleBottomRef} />
+        </div>
+      </div>
+
+      <div className="w-full text-center text-xl font-semibold border-t border-gray-200 pt-2">
+        <span className="text-2xl pb-1">Alapatch</span> <br /> 
+        <span className="text-xs text-gray-400 font-normal">A microKORG Patch Editor</span>
       </div>
     </div>
   );
