@@ -14,21 +14,15 @@ jobs:
       - name: Deploy via SSH
         shell: bash
         run: |
-          echo "Démarrage de la connexion vers le serveur distant..."
+          echo "Démarrage de la réplication vers le serveur distant..."
           
-          # Ajout de -o BatchMode=yes et séparation des étapes pour forcer l'affichage des logs
+          # Version ultra-légère : uniquement la synchronisation des fichiers Git
           ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
             cd /opt/alapatch &&
-            echo '=> Fetching...' && git fetch --all &&
-            echo '=> Resetting...' && git reset --hard origin/main &&
-            echo '=> Building Docker...' && docker build -t alapatch-prod . &&
-            echo '=> Cleaning old containers...' &&
-            if [ \$(docker ps -aq -f name=microkorg-editor) ]; then 
-              docker stop microkorg-editor && docker rm microkorg-editor; 
-            fi &&
-            echo '=> Running new container...' &&
-            docker run -d --restart unless-stopped -p 4321:4321 --name microkorg-editor alapatch-prod
+            echo '=> Synchronisation Git en cours...' &&
+            git fetch --all &&
+            git reset --hard origin/main &&
+            echo '=> Réplication des fichiers terminée avec succès.'
           "
           
-          echo "Le script de déploiement distant a été exécuté."
-
+          echo "Le pipeline Gitea Actions a fini son travail."
