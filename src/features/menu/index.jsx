@@ -188,9 +188,7 @@ export default function Menu(props) {
         <div className="my-1 flex flex-col items-center space-y-2">
           <button
             className="btn bg-indigo-600 text-white hover:bg-indigo-700 w-full font-semibold"
-            onClick={() => {
-              requestCurrentPatchDump();
-            }}
+            onClick={() => {requestCurrentPatchDump();}}
           >
             📥 Import from KORG
           </button>
@@ -199,129 +197,100 @@ export default function Menu(props) {
       {/* CONTENEUR DES BOUTONS D'ACTIONS */}
 
       <div className="my-1">
-        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-          Patch
+        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">PATCHS</div>
+        <div className="grid grid-cols-3 gap-1">
+          <button
+            className="btn w-full"
+            onClick={() => dispatch(parameterRefreshAll())}
+          >New
+          </button>
+
+          <button
+            className="btn w-full"
+            onClick={() => fileRef.current.click()}
+          >Load
+          </button>
+
+          <button
+            className="btn w-full"
+            onClick={() => {
+              download(
+                return_file_from_store(state),
+                'microKORG_patch.syx',
+                'application/octet-binary'
+              );
+            }}
+          >Save
+          </button>
+
       </div>
 
-      <div className="grid grid-cols-3 gap-1">
-        <button
-          className="btn w-full"
-          onClick={() => dispatch(parameterRefreshAll())}
-        >
-          New
-        </button>
+        <input
+          className="hidden"
+          type="file"
+          accept=".syx"
+          ref={fileRef}
+          onChange={(e) => loadFile(e.target.files[0])}
+        />
 
-        <button
-          className="btn w-full"
-          onClick={() => fileRef.current.click()}
-        >
-          Load
-        </button>
-
-        <button
-          className="btn w-full"
-          onClick={() => {
-            download(
-              return_file_from_store(state),
-              'microKORG_patch.syx',
-              'application/octet-binary'
-            );
-          }}
-        >
-          Save
-        </button>
       </div>
-
-      <input
-        className="hidden"
-        type="file"
-        accept=".syx"
-        ref={fileRef}
-        onChange={(e) => loadFile(e.target.files[0])}
-      />
-    </div>
 
       {/* liste single,multiple,vocoder */}
 
-        <div className="patch-settings">
-          <Select
-            className="w-full select"
-            value={state.patch.mode}
-            list={[
-              { value: 'Single' },
-              { value: 'Multiple' },
-              { value: 'Vocoder' },
-            ]}
-            onChange={(value) => {
-              dispatch(
-                parameterUpdated({
-                  id: 'patch',
-                  changes: { mode: value },
-                })
-              );
-            }}
-          />
-        </div>
+      <div className="patch-settings">
+        <Select
+          className="w-full select"
+          value={state.patch.mode}
+          list={[
+            { value: 'Single' },
+            { value: 'Multiple' },
+            { value: 'Vocoder' },
+          ]}
+          onChange={(value) => {
+            dispatch(
+              parameterUpdated({
+                id: 'patch',
+                changes: { mode: value },
+              })
+            );
+          }}
+        />
       </div>
-
-      {/* 2 boutons Editor / Memory */}
-
-      <div className="my-1 w-full">
-        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Pages</div>
-        <div className="flex gap-1 w-full">
-          <button
-            className={props.page === 'editor' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
-            onClick={() => props.setPage('editor')}
-          >
-            Editor
-          </button>
-
-          <button
-            className={props.page === 'memory' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
-            onClick={() => props.setPage('memory')}
-          >
-            Memory
-          </button>
-        </div>
+      
       </div>
 
       {/* Choix Timbre 1, Timbre 2, Vocoder, Arp/FX */}
 
       <div className="my-1 w-full">
-        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-          TIMBRES
-        </div>
+
+        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">TIMBRES</div>
 
         <div className="grid grid-cols-4 gap-1">
           <button
             disabled={state.patch.mode === 'Vocoder'}
             className={activeTab === 'Timbre1' ? 'btn btn-active w-full' : 'btn w-full'}
             onClick={() => dispatch(parameterUpdateTab('Timbre1'))}
-          >
-            Timbre1
+          >Timbre1
           </button>
 
           <button
             disabled={state.patch.mode !== 'Multiple'}
             className={activeTab === 'Timbre2' ? 'btn btn-active w-full' : 'btn w-full'}
             onClick={() => dispatch(parameterUpdateTab('Timbre2'))}
-          >
-            Timbre2
+          >Timbre2
           </button>
 
           <button
             disabled={state.patch.mode !== 'Vocoder'}
             className={activeTab === 'Vocoder' ? 'btn btn-active w-full' : 'btn w-full'}
             onClick={() => dispatch(parameterUpdateTab('Vocoder'))}
-          >
-            Vocoder
+          >Vocoder
           </button>
 
           <button
             className={activeTab === 'Effects' ? 'btn btn-active w-full' : 'btn w-full'}
             onClick={() => dispatch(parameterUpdateTab('Effects'))}
-          >
-            Arp/FX
+          >Arp/FX
           </button>
         </div>
       </div>
@@ -337,16 +306,10 @@ export default function Menu(props) {
             <div className="text-gray-600 italic">Aucun flux détecté...</div>
           ) : (
             midiLogs.map((log, idx) => (
-              <div 
-                key={idx} 
-                className={log.type === 'in' ? 'text-emerald-400' : 'text-cyan-400'}
-              >
-                {log.text}
-              </div>
+              <div key={idx} className={log.type === 'in' ? 'text-emerald-400' : 'text-cyan-400'}>{log.text}</div>
             ))
           )}
-          <div ref={consoleBottomRef} />
-        </div>
+          <div ref={consoleBottomRef} /></div>
       </div>
 
       <div className="w-full text-center text-xl font-semibold border-t border-gray-200 pt-2">
