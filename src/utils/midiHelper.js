@@ -8,6 +8,7 @@ let dumpRetryTimer = null;
 let selectedMidiOutput = null;
 let selectedMidiInput = null;
 let onLogCallback = null;
+let onAllDumpReceivedCallback = null;
 
 // Nouvelle fonction de rappel pour transmettre le dump reçu à Redux
 let onPatchReceivedCallback = null;
