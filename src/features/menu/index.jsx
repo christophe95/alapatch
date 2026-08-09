@@ -256,6 +256,8 @@ export default function Menu(props) {
 
       {/* liste single,multiple,vocoder */}
 
+      <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">TYPE</label>
+
       <div className="patch-settings">
         <Select
           className="w-full select"
