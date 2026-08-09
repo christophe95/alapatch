@@ -308,7 +308,7 @@ export default function Menu() {
       </div>
 
       <div className="w-full text-center text-xl font-semibold border-t border-gray-200 pt-2">
-        <span className="text-2xl pb-1">Alapatch</span> <br /> 
+        <span className="text-2xl pb-1">Alapatch v2</span> <br /> 
         <span className="text-xs text-gray-400 font-normal">A microKORG Patch Editor</span>
       </div>
     </div>
