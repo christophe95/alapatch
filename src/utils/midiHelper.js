@@ -14,6 +14,10 @@ let onPatchReceivedCallback = null;
 
 export const registerMidiLogger = (callback) => { onLogCallback = callback; };
 
+export const registerAllDumpReceiver = (callback) => {
+  onAllDumpReceivedCallback = callback;
+};
+
 /**
  * Permet à Redux d'enregistrer sa fonction de capture de patch
  */
@@ -90,6 +94,22 @@ export const requestCurrentPatchDump = () => {
   }
 
   sendCurrentPatchDumpRequest();
+};
+
+export const requestAllDump = () => {
+  if (!selectedMidiOutput) return;
+
+  const requestMessage = [
+    0xF0,
+    0x42,
+    0x30,
+    0x58,
+    0x1C,
+    0xF7
+  ];
+
+  selectedMidiOutput.send(requestMessage);
+  logMidiActivity('out', '➡️ REQ ALL', requestMessage);
 };
 
 const sendCurrentPatchDumpRequest = () => {
