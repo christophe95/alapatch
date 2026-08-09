@@ -97,17 +97,16 @@ export const requestCurrentPatchDump = () => {
 };
 
 export const requestAllDump = () => {
-  if (!selectedMidiOutput) return;
+  console.log('[MIDI] requestAllDump déclenché');
 
-  const requestMessage = [
-    0xF0,
-    0x42,
-    0x30,
-    0x58,
-    0x1C,
-    0xF7
-  ];
+  if (!selectedMidiOutput) {
+    console.error('[MIDI] aucune sortie MIDI sélectionnée');
+    return;
+  }
 
+  const requestMessage = [0xF0, 0x42, 0x30, 0x58, 0x1C, 0xF7];
+
+  console.log('[MIDI] REQ ALL:', requestMessage);
   selectedMidiOutput.send(requestMessage);
   logMidiActivity('out', '➡️ REQ ALL', requestMessage);
 };
