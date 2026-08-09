@@ -316,6 +316,8 @@ export default function Menu(props) {
 
       {/* LA PETITE CONSOLE DU MONITEUR MIDI HEXADÉCIMAL */}
 
+      <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">CONSOLE</label>
+
       <div className="my-1 flex flex-col flex-grow h-32 w-full bg-black text-gray-300 font-mono text-[10px] p-2 rounded overflow-y-auto border border-gray-700 shadow-inner">
         <div className="text-gray-500 font-bold border-b border-gray-800 pb-1 mb-1 sticky top-0 bg-black uppercase tracking-wider text-[9px]">
           Moniteur MIDI Activity
