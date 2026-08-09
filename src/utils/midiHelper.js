@@ -1,47 +1,66 @@
-// Stocke l'interface MIDI physique de sortie
-let activeMidiOutput = null;
+// Variable globale contenant l'interface MIDI actuellement sélectionnée par l'utilisateur
+let selectedMidiOutput = null;
 
 /**
- * Initialise l'accès à la Web MIDI API du navigateur (Exige un contexte HTTPS ou localhost)
+ * Initialise l'accès MIDI et renvoie la liste des périphériques physiques disponibles
+ * @returns {Promise<Array>} Liste des ports de sortie MIDI [{id, name}, ...]
  */
 export const initWebMidi = () => {
-  if (navigator.requestMIDIAccess) {
-    navigator.requestMIDIAccess({ sysex: true }) // REQUIS pour le SysEx du microKORG
+  return new Promise((resolve, reject) => {
+    if (!navigator.requestMIDIAccess) {
+      console.error("[MIDI] L'API Web MIDI n'est pas supportée.");
+      return resolve([]);
+    }
+
+    navigator.requestMIDIAccess({ sysex: true })
       .then((midiAccess) => {
         const outputs = Array.from(midiAccess.outputs.values());
-        if (outputs.length > 0) {
-          activeMidiOutput = outputs[0]; // Sélectionne par défaut la première interface physique
-          console.log(`[MIDI ALAPATCH] Connecté au port de sortie : ${activeMidiOutput.name}`);
-        } else {
-          console.warn("[MIDI ALAPATCH] Aucune interface de sortie MIDI physique trouvée.");
+        
+        // Si un périphérique est déjà branché, on le sélectionne par défaut
+        if (outputs.length > 0 && !selectedMidiOutput) {
+          selectedMidiOutput = outputs[0];
         }
+
+        // On renvoie un tableau d'objets simples exploitables par React
+        const devices = outputs.map(port => ({ id: port.id, name: port.name }));
+        resolve(devices);
       })
-      .catch(err => console.error("[MIDI ALAPATCH] Accès refusé par le navigateur : ", err));
-  } else {
-    console.error("[MIDI ALAPATCH] Ce navigateur ne gère pas l'API Web MIDI.");
-  }
+      .catch(err => {
+        console.error("[MIDI] Accès refusé : ", err);
+        resolve([]);
+      });
+  });
 };
 
 /**
- * Transmet un message de changement de paramètre (Parameter Change) en SysEx
- * @param {number} parameterId - L'adresse interne du bouton (ex: 0x1E pour le Cutoff)
- * @param {number} value - La valeur du curseur (0 à 127)
+ * Permet à l'utilisateur de changer d'interface MIDI depuis le menu déroulant
+ * @param {string} portId - L'identifiant du port choisi
+ */
+export const changeSelectedMidiPort = (portId) => {
+  if (!navigator.requestMIDIAccess) return;
+
+  navigator.requestMIDIAccess({ sysex: true }).then((midiAccess) => {
+    const outputs = Array.from(midiAccess.outputs.values());
+    const targetPort = outputs.find(port => port.id === portId);
+    if (targetPort) {
+      selectedMidiOutput = targetPort;
+      console.log(`[MIDI] Nouveau port sélectionné : ${selectedMidiOutput.name}`);
+    }
+  });
+};
+
+/**
+ * Envoie la trame SysEx au port actuellement sélectionné
  */
 export const sendMicroKorgParam = (parameterId, value) => {
-  if (!activeMidiOutput) return; // Si aucune carte MIDI n'est branchée, on ignore
+  if (!selectedMidiOutput) return; // Si aucun choix n'est fait, on n'envoie rien
 
-  // Trame System Exclusive standard du protocole Korg microKORG Original (2002)
   const sysExMessage = [
-    0xF0,        // Début du message SysEx
-    0x42,        // Identification du fabricant (Korg)
-    0x30,        // Canal MIDI Global (0x30 = Canal 1)
-    0x58,        // Identification du modèle (microKORG)
-    0x41,        // Type de commande : Parameter Change
-    parameterId, // ID du potentiomètre ciblé (ex: 30 pour le Cutoff)
-    value,       // Position du curseur (0-127)
-    0xF7         // Fin du message SysEx
+    0xF0, 0x42, 0x30, 0x58, 0x41,
+    parameterId,
+    value,
+    0xF7
   ];
 
-  // Envoi physique immédiat dans le câble USB-MIDI
-  activeMidiOutput.send(sysExMessage);
+  selectedMidiOutput.send(sysExMessage);
 };
