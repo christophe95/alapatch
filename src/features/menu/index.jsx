@@ -1,3 +1,5 @@
+import React, { useState, useEffect } from 'react';
+import { initWebMidi, changeSelectedMidiPort } from '../../utils/midiHelper';
 import { useRef, useState, useEffect } from 'react';
 import { Select } from '../utils/components';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,6 +14,27 @@ import { return_store_from_file, return_file_from_store } from '../io';
 import download from 'downloadjs';
 
 export default function Menu() {
+
+// À insérer juste au début de votre fonction export default function Menu() {
+const [midiDevices, setMidiDevices] = useState([]);
+const [activePortId, setActivePortId] = useState('');
+
+useEffect(() => {
+  // Charge la liste des ports physiques au démarrage
+  initWebMidi().then(devices => {
+    setMidiDevices(devices);
+    if (devices.length > 0) {
+      setActivePortId(devices[0].id);
+    }
+  });
+}, []);
+
+const handleMidiChange = (e) => {
+  const portId = e.target.value;
+  setActivePortId(portId);
+  changeSelectedMidiPort(portId); // Alerte notre helper du changement de câble
+};
+
   const [file, setFile] = useState(null);
   const fileRef = useRef(null);
   const state = useSelector((state) => selectEntities(state));
@@ -60,6 +83,25 @@ export default function Menu() {
             }}
           />
         </div>
+
+<div class="flex items-center space-x-2 bg-gray-800 p-2 rounded border border-gray-700">
+  <label for="midi-select" class="text-xs font-bold text-gray-400 uppercase">Port MIDI :</label>
+  <select 
+    id="midi-select"
+    value={activePortId}
+    onChange={handleMidiChange}
+    class="bg-gray-900 text-sm text-white px-2 py-1 rounded border border-gray-600 focus:outline-none focus:border-indigo-500"
+  >
+    {midiDevices.length === 0 ? (
+      <option value="">Aucune interface trouvée</option>
+    ) : (
+      midiDevices.map(device => (
+        <option key={device.id} value={device.id}>{device.name}</option>
+      ))
+    )}
+  </select>
+</div>
+
         <div className="my-3 flex flex-col items-center space-y-2">
           <button
             className="btn"
