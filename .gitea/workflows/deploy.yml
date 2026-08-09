@@ -20,7 +20,7 @@ jobs:
             cd /opt/alapatch &&
             
             echo '=> [1/4] Redéfinition du remote vers Gitea...' &&
-            git remote set-url origin https://mesdonneesadministratives.fr || git remote add origin https://git.mesdonneesadministratives.fr &&
+            git remote set-url origin https://git.mesdonneesadministratives.fr || git remote add origin https://git.mesdonneesadministratives.fr &&
             
             echo '=> [2/4] Nettoyage et Synchronisation...' &&
             git fetch --all &&
