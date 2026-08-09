@@ -194,7 +194,7 @@ export default function Menu() {
               download(
                 return_file_from_store(state),
                 'microKORG_patch.syx',
-                'application/octet-bianry'
+                'application/octet-binary'
               );
             }}
           >
