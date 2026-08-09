@@ -63,6 +63,9 @@ export default function Menu() {
             .join(' ')
         );
         const parsedStoreData = return_store_from_file(rawSysExBytes);
+        if (!parsedStoreData.patch.name.trim()) {
+          parsedStoreData.patch.name = '------------';
+        }
         console.log('[MIDI] patch décodé:', parsedStoreData.patch);
         console.log('[MIDI] entités:', Object.keys(parsedStoreData));
         // Injection explicite sous forme de tableau d'entités
@@ -103,9 +106,6 @@ export default function Menu() {
   useEffect(() => {
     if (file) {
       dispatch(parameterFromFile(return_store_from_file(file)));
-        if (!parsedStoreData.patch.name.trim()) {
-          parsedStoreData.patch.name = '------------';
-        }
     }
   }, [file, dispatch]);
 
