@@ -56,6 +56,13 @@ export default function Menu() {
     registerPatchReceiver((rawSysExBytes) => {
       try {
         console.log('[MIDI] longueur SysEx:', rawSysExBytes.length);
+        
+        console.log(
+          '[MIDI] RAW:',
+          Array.from(rawSysExBytes)
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join(' ')
+        );
         const parsedStoreData = return_store_from_file(rawSysExBytes);
         console.log('[MIDI] patch décodé:', parsedStoreData.patch);
         console.log('[MIDI] entités:', Object.keys(parsedStoreData));
