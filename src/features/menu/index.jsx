@@ -19,7 +19,7 @@ import {
 import { return_store_from_file, return_file_from_store } from '../io';
 import download from 'downloadjs';
 
-export default function Menu() {
+export default function Menu(props) {
   const [midiOutputs, setMidiOutputs] = useState([]);
   const [midiInputs, setMidiInputs] = useState([]);
   const [activeOutId, setActiveOutId] = useState('');
@@ -254,6 +254,22 @@ export default function Menu() {
             }}
           />
         </div>
+      </div>
+
+      <div className="my-1 flex gap-1 w-full">
+        <button
+          className={props.page === 'editor' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
+          onClick={() => props.setPage('editor')}
+        >
+          Editor
+        </button>
+
+        <button
+          className={props.page === 'memory' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
+          onClick={() => props.setPage('memory')}
+        >
+         Memory
+        </button>
       </div>
 
       <div className="my-2 flex flex-col items-center space-y-2">
