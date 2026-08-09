@@ -110,7 +110,7 @@ export default function Menu() {
   }, [state.patch.mode, dispatch]);
 
   return (
-    <div className="h-screen col-span-1 flex flex-col justify-between border-solid border-r border-gray-300 bg-white px-4 py-4">
+    <div className="h-screen col-span-1 flex flex-col justify-between border-solid border-r border-gray-300 bg-white px-2 py-2">
       <div className="menu-patch-container">
         <div className="patch-name">
           <input
@@ -131,7 +131,7 @@ export default function Menu() {
         </div>
 
         {/* BLOC DOUBLE SÉLECTEUR MIDI */}
-        <div className="my-3 flex flex-col space-y-3 bg-gray-100 p-2 rounded border border-gray-300">
+        <div className="my-1 flex flex-col space-y-3 bg-gray-100 p-2 rounded border border-gray-300">
           <div className="flex flex-col space-y-1">
             <label htmlFor="midi-out-select" className="text-xs font-bold text-gray-500 uppercase">
               MIDI Out (Vers Synthé) :
@@ -174,7 +174,7 @@ export default function Menu() {
         </div>
 
         {/* CONTENEUR DES BOUTONS D'ACTIONS */}
-        <div className="my-3 flex flex-col items-center space-y-2">
+        <div className="my-1 flex flex-col items-center space-y-2">
           <button
             className="btn bg-indigo-600 text-white hover:bg-indigo-700 w-full font-semibold"
             onClick={() => {
@@ -286,7 +286,7 @@ export default function Menu() {
       </div>
 
       {/* LA PETITE CONSOLE DU MONITEUR MIDI HEXADÉCIMAL */}
-      <div className="my-2 flex flex-col flex-grow h-32 w-full bg-black text-gray-300 font-mono text-[10px] p-2 rounded overflow-y-auto border border-gray-700 shadow-inner">
+      <div className="my-1 flex flex-col flex-grow h-32 w-full bg-black text-gray-300 font-mono text-[10px] p-2 rounded overflow-y-auto border border-gray-700 shadow-inner">
         <div className="text-gray-500 font-bold border-b border-gray-800 pb-1 mb-1 sticky top-0 bg-black uppercase tracking-wider text-[9px]">
           Moniteur MIDI Activity
         </div>
