@@ -56,7 +56,6 @@ export default function Menu() {
     registerPatchReceiver((rawSysExBytes) => {
       try {
         console.log('[MIDI] longueur SysEx:', rawSysExBytes.length);
-        
         console.log(
           '[MIDI] RAW:',
           Array.from(rawSysExBytes)
@@ -104,6 +103,9 @@ export default function Menu() {
   useEffect(() => {
     if (file) {
       dispatch(parameterFromFile(return_store_from_file(file)));
+        if (!parsedStoreData.patch.name.trim()) {
+          parsedStoreData.patch.name = '------------';
+        }
     }
   }, [file, dispatch]);
 
