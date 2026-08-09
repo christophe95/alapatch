@@ -143,10 +143,7 @@ const setupMidiInputListener = (inputPort) => {
     if (data.length === EXPECTED_DUMP_LENGTH) {
       dumpRetryCount = 0;
 
-      if (dumpRetryTimer) {
-        clearTimeout(dumpRetryTimer);
-        dumpRetryTimer = null;
-      }
+      if (dumpRetryTimer) clearTimeout(dumpRetryTimer);
 
       logMidiActivity('in', '⬅️ DUMP OK', data);
 
