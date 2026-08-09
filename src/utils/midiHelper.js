@@ -1,3 +1,10 @@
+const EXPECTED_DUMP_LENGTH = 297;
+const MAX_DUMP_RETRIES = 10;
+const DUMP_RETRY_DELAY = 150;
+
+let dumpRetryCount = 0;
+let dumpRetryTimer = null;
+
 let selectedMidiOutput = null;
 let selectedMidiInput = null;
 let onLogCallback = null;
@@ -71,44 +78,106 @@ export const changeMidiInputPort = (portId) => {
 /**
  * Envoie une requête de "Current Parameter Dump" au microKORG
  */
+
 export const requestCurrentPatchDump = () => {
   if (!selectedMidiOutput) return;
 
-  // Trame officielle de requête de dump de paramètre courant Korg microKORG
+  dumpRetryCount = 0;
+
+  if (dumpRetryTimer) {
+    clearTimeout(dumpRetryTimer);
+    dumpRetryTimer = null;
+  }
+
+  sendCurrentPatchDumpRequest();
+};
+
+const sendCurrentPatchDumpRequest = () => {
+  if (!selectedMidiOutput) return;
+
   const requestMessage = [
-    0xF0, // Start SysEx
-    0x42, // Korg ID
-    0x30, // Canal global 1
-    0x58, // microKORG ID
-    0x10, // Message de requête (Current Data Dump Request)
-    0xF7  // End SysEx
+    0xF0,
+    0x42,
+    0x30,
+    0x58,
+    0x10,
+    0xF7
   ];
 
   selectedMidiOutput.send(requestMessage);
-  logMidiActivity('out', '➡️ REQ', requestMessage);
+
+  logMidiActivity(
+    'out',
+    dumpRetryCount === 0 ? '➡️ REQ' : `➡️ RETRY ${dumpRetryCount}`,
+    requestMessage
+  );
 };
 
 const setupMidiInputListener = (inputPort) => {
-  if (selectedMidiInput) selectedMidiInput.onmidimessage = null;
-  selectedMidiInput = inputPort;
-  selectedMidiInput.onmidimessage = (event) => {
-    const data = event.data;
-    if (data[0] === 0xF8) return; // Ignore l'horloge temporelle F8
+  if (selectedMidiInput) {
+    selectedMidiInput.onmidimessage = null;
+  }
 
-    // Analyse : S'agit-il d'une réponse de Dump du microKORG ?
-    // 0xF0 (SysEx), 0x42 (Korg), Canal, 0x58 (microKorg), 0x40 (Current Data Dump)
-    if (data[0] === 0xF0 && data[1] === 0x42 && data[3] === 0x58 && data[4] === 0x40) {
+  selectedMidiInput = inputPort;
+
+  selectedMidiInput.onmidimessage = (event) => {
+    const data = new Uint8Array(event.data);
+
+    if (data[0] === 0xF8) return;
+
+    const isCurrentProgramDump =
+      data[0] === 0xF0 &&
+      data[1] === 0x42 &&
+      data[3] === 0x58 &&
+      data[4] === 0x40;
+
+    if (!isCurrentProgramDump) {
       logMidiActivity('in', '⬅️ IN ', data);
-      if (onPatchReceivedCallback) {
-        // Envoie le tableau de bytes brut à l'application
-        onPatchReceivedCallback(data);
-      }
       return;
     }
 
-    logMidiActivity('in', '⬅️ IN ', data);
+    console.log(
+      `[MIDI] Current dump reçu : ${data.length}/${EXPECTED_DUMP_LENGTH} octets`
+    );
+
+    if (data.length === EXPECTED_DUMP_LENGTH) {
+      dumpRetryCount = 0;
+
+      if (dumpRetryTimer) {
+        clearTimeout(dumpRetryTimer);
+        dumpRetryTimer = null;
+      }
+
+      logMidiActivity('in', '⬅️ DUMP OK', data);
+
+      if (onPatchReceivedCallback) {
+        onPatchReceivedCallback(data);
+      }
+
+      return;
+    }
+
+    logMidiActivity(
+      'in',
+      `⬅️ DUMP ${data.length}/${EXPECTED_DUMP_LENGTH}`,
+      data
+    );
+
+    if (dumpRetryCount >= MAX_DUMP_RETRIES) {
+      console.error(
+        `[MIDI] abandon après ${MAX_DUMP_RETRIES} tentatives - dernier dump : ${data.length} octets`
+      );
+      return;
+    }
+
+    dumpRetryCount++;
+
+    dumpRetryTimer = setTimeout(() => {
+      sendCurrentPatchDumpRequest();
+    }, DUMP_RETRY_DELAY);
   };
 };
+
 
 export const sendMicroKorgParam = (parameterId, value) => {
   if (!selectedMidiOutput) return;
