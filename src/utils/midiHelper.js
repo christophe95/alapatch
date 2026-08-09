@@ -1,54 +1,52 @@
 let selectedMidiOutput = null;
 let selectedMidiInput = null;
-
-// Fonctions de rappel pour transmettre les logs à l'interface React
 let onLogCallback = null;
 
+// Nouvelle fonction de rappel pour transmettre le dump reçu à Redux
+let onPatchReceivedCallback = null;
+
+export const registerMidiLogger = (callback) => { onLogCallback = callback; };
+
 /**
- * Permet au composant React d'enregistrer sa fonction d'affichage des logs
+ * Permet à Redux d'enregistrer sa fonction de capture de patch
  */
-export const registerMidiLogger = (callback) => {
-  onLogCallback = callback;
+export const registerPatchReceiver = (callback) => {
+  onPatchReceivedCallback = callback;
 };
 
-// Utilitaire pour formater un tableau de bytes en chaîne Hexadécimale propre
 const bytesToHexStr = (bytes) => {
-  return Array.from(bytes)
-    .map(b => b.toString(16).toUpperCase().padStart(2, '0'))
-    .join(' ');
+  return Array.from(bytes).map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
 };
 
 const logMidiActivity = (direction, directionArrow, rawData) => {
   if (onLogCallback) {
     const timestamp = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const hexString = bytesToHexStr(rawData);
-    onLogCallback({
-      text: `[${timestamp}] ${directionArrow} ${hexString}`,
-      type: direction // 'in' ou 'out' pour la couleur
-    });
+    logMidiActivityRaw(timestamp, direction, directionArrow, rawData);
+  }
+};
+
+const logMidiActivityRaw = (timestamp, direction, directionArrow, rawData) => {
+  if (rawData.length > 10) {
+    // Si la trame est trop longue (comme un dump), on résume l'affichage dans la console noire
+    onLogCallback({ text: `[${timestamp}] ${directionArrow} [DUMP SYSEX RECEVED - ${rawData.length} BYTES]`, type: direction });
+  } else {
+    onLogCallback({ text: `[${timestamp}] ${directionArrow} ${bytesToHexStr(rawData)}`, type: direction });
   }
 };
 
 export const initWebMidi = () => {
   return new Promise((resolve) => {
-    if (!navigator.requestMIDIAccess) {
-      return resolve({ inputs: [], outputs: [] });
-    }
-
-    navigator.requestMIDIAccess({ sysex: true })
-      .then((midiAccess) => {
-        const outputs = Array.from(midiAccess.outputs.values());
-        const inputs = Array.from(midiAccess.inputs.values());
-        
-        if (outputs.length > 0 && !selectedMidiOutput) selectedMidiOutput = outputs[0];
-        if (inputs.length > 0 && !selectedMidiInput) setupMidiInputListener(inputs[0]);
-
-        resolve({
-          outputs: outputs.map(port => ({ id: port.id, name: port.name })),
-          inputs: inputs.map(port => ({ id: port.id, name: port.name }))
-        });
-      })
-      .catch(() => resolve({ inputs: [], outputs: [] }));
+    if (!navigator.requestMIDIAccess) return resolve({ inputs: [], outputs: [] });
+    navigator.requestMIDIAccess({ sysex: true }).then((midiAccess) => {
+      const outputs = Array.from(midiAccess.outputs.values());
+      const inputs = Array.from(midiAccess.inputs.values());
+      if (outputs.length > 0 && !selectedMidiOutput) selectedMidiOutput = outputs[0];
+      if (inputs.length > 0 && !selectedMidiInput) setupMidiInputListener(inputs[0]);
+      resolve({
+        outputs: outputs.map(port => ({ id: port.id, name: port.name })),
+        inputs: inputs.map(port => ({ id: port.id, name: port.name }))
+      });
+    }).catch(() => resolve({ inputs: [], outputs: [] }));
   });
 };
 
@@ -70,16 +68,44 @@ export const changeMidiInputPort = (portId) => {
   });
 };
 
+/**
+ * Envoie une requête de "Current Parameter Dump" au microKORG
+ */
+export const requestCurrentPatchDump = () => {
+  if (!selectedMidiOutput) return;
+
+  // Trame officielle de requête de dump de paramètre courant Korg microKORG
+  const requestMessage = [
+    0xF0, // Start SysEx
+    0x42, // Korg ID
+    0x30, // Canal global 1
+    0x58, // microKORG ID
+    0x10, // Message de requête (Current Data Dump Request)
+    0xF7  // End SysEx
+  ];
+
+  selectedMidiOutput.send(requestMessage);
+  logMidiActivity('out', '➡️ REQ', requestMessage);
+};
+
 const setupMidiInputListener = (inputPort) => {
   if (selectedMidiInput) selectedMidiInput.onmidimessage = null;
   selectedMidiInput = inputPort;
   selectedMidiInput.onmidimessage = (event) => {
     const data = event.data;
+    if (data[0] === 0xF8) return; // Ignore l'horloge temporelle F8
 
-    // PROTECTION ET FILTRAGE : Si l'octet est une horloge MIDI (0xF8), on l'ignore
-    if (data[0] === 0xF8) return;
+    // Analyse : S'agit-il d'une réponse de Dump du microKORG ?
+    // 0xF0 (SysEx), 0x42 (Korg), Canal, 0x58 (microKorg), 0x40 (Current Data Dump)
+    if (data[0] === 0xF0 && data[1] === 0x42 && data[3] === 0x58 && data[4] === 0x40) {
+      logMidiActivity('in', '⬅️ IN ', data);
+      if (onPatchReceivedCallback) {
+        // Envoie le tableau de bytes brut à l'application
+        onPatchReceivedCallback(data);
+      }
+      return;
+    }
 
-    // Intercepte et logue uniquement les vrais messages (SysEx, Notes, Molettes)
     logMidiActivity('in', '⬅️ IN ', data);
   };
 };
@@ -87,9 +113,6 @@ const setupMidiInputListener = (inputPort) => {
 export const sendMicroKorgParam = (parameterId, value) => {
   if (!selectedMidiOutput) return;
   const sysExMessage = [0xF0, 0x42, 0x30, 0x58, 0x41, parameterId, value, 0xF7];
-  
   selectedMidiOutput.send(sysExMessage);
-  
-  // Logue la sortie MIDI (Vers le microKORG)
   logMidiActivity('out', '➡️ OUT', sysExMessage);
 };
