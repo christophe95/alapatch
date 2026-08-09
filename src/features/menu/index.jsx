@@ -266,28 +266,30 @@ export default function Menu(props) {
 
       {/* 2 boutons Editor / Memory */}
 
-      <div className="my-1 flex gap-1 w-full">
-        <button
-          className={props.page === 'editor' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
-          onClick={() => props.setPage('editor')}
-        >
-          Editor
-        </button>
+      <div className="my-1 w-full">
+        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Pages</div>
+        <div className="flex gap-1 w-full">
+          <button
+            className={props.page === 'editor' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
+            onClick={() => props.setPage('editor')}
+          >
+            Editor
+          </button>
 
-        <button
-          className={props.page === 'memory' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
-          onClick={() => props.setPage('memory')}
-        >
-         Memory
-        </button>
+          <button
+            className={props.page === 'memory' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
+            onClick={() => props.setPage('memory')}
+          >
+            Memory
+          </button>
+        </div>
       </div>
 
       {/* Choix Timbre 1, Timbre 2, Vocoder, Arp/FX */}
 
-
       <div className="my-1 w-full">
         <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-          Timbres
+          TIMBRES
         </div>
 
         <div className="grid grid-cols-4 gap-1">
@@ -296,7 +298,7 @@ export default function Menu(props) {
             className={activeTab === 'Timbre1' ? 'btn btn-active w-full' : 'btn w-full'}
             onClick={() => dispatch(parameterUpdateTab('Timbre1'))}
           >
-            Timbre 1
+            Timbre1
           </button>
 
           <button
@@ -304,7 +306,7 @@ export default function Menu(props) {
             className={activeTab === 'Timbre2' ? 'btn btn-active w-full' : 'btn w-full'}
             onClick={() => dispatch(parameterUpdateTab('Timbre2'))}
           >
-            Timbre 2
+            Timbre2
           </button>
 
           <button
