@@ -28,7 +28,7 @@ export default function Menu() {
     initWebMidi().then(devices => {
       setMidiDevices(devices);
       if (devices.length > 0) {
-        setActivePortId(devices[0].id);
+        setActivePortId(devices.id);
       }
     });
   }, []);
