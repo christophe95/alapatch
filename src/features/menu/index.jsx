@@ -144,6 +144,7 @@ export default function Menu(props) {
         {/* BLOC Patch Name */}
 
         <div className="patch-name">
+          <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">PATCH NAME</label>
           <input
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             placeholder="Patch Name"
