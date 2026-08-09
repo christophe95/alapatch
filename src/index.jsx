@@ -1,8 +1,3 @@
-import { initWebMidi } from './utils/midiHelper';
-
-// Déclenche l'ouverture du studio MIDI du navigateur
-initWebMidi();
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
