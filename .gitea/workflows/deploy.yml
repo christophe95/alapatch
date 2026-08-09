@@ -16,11 +16,11 @@ jobs:
         run: |
           echo "Démarrage de la connexion et réplication forcée..."
           
-          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
+          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@git.mesdonneesadministratives.fr "
             cd /opt/alapatch &&
             
             echo '=> [1/4] Redéfinition du remote vers Gitea...' &&
-            git remote set-url origin https://mesdonneesadministratives.fr || git remote add origin https://mesdonneesadministratives.fr &&
+            git remote set-url origin https://mesdonneesadministratives.fr || git remote add origin https://git.mesdonneesadministratives.fr &&
             
             echo '=> [2/4] Nettoyage et Synchronisation...' &&
             git fetch --all &&
