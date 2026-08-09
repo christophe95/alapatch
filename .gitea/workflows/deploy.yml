@@ -14,21 +14,13 @@ jobs:
       - name: Deploy via SSH
         run: |
           ssh -o StrictHostKeyChecking=no -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
-            # 1. Alignement strict du code source sur la branche main
             cd /opt/alapatch &&
             git fetch --all &&
             git reset --hard origin/main &&
-            
-            # 2. Nettoyage des anciennes dépendances
-            rm -rf node_modules build &&
-            
-            # 3. Compilation locale sur le Node v22 du serveur de destination
-            npm install --legacy-peer-deps &&
-            npm run build &&
-            
-            # 4. Nettoyage de l'ancien processus en tâche de fond sur le port 4321
-            fuser -k 4321/tcp || true &&
-            
-            # 5. Lancement isolé en tâche de fond (0.0.0.0 écoute sur toutes les interfaces)
-            nohup npx serve -s build -l 4321 > /dev/null 2>&1 &
+            docker build --no-cache -t alapatch-prod . &&
+            if [ \$(docker ps -aq -f name=microkorg-editor) ]; then
+              docker stop microkorg-editor &&
+              docker rm microkorg-editor
+            fi &&
+            docker run -d --restart unless-stopped -p 4321:4321 --name microkorg-editor alapatch-prod
           "
