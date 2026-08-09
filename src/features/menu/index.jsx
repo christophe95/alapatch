@@ -147,9 +147,7 @@ export default function Menu(props) {
 
         <div className="my-1 flex flex-col space-y-3 bg-gray-100 p-2 rounded border border-gray-300">
           <div className="flex flex-col space-y-1">
-            <label htmlFor="midi-out-select" className="text-xs font-bold text-gray-500 uppercase">
-              MIDI Out (Vers Synthé) :
-            </label>
+            <label htmlFor="midi-out-select" className="text-xs font-bold text-gray-500 uppercase"> MIDI Out :</label>
             <select 
               id="midi-out-select"
               value={activeOutId}
@@ -167,9 +165,7 @@ export default function Menu(props) {
           </div>
 
           <div className="flex flex-col space-y-1">
-            <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">
-              MIDI In (Depuis Synthé) :
-            </label>
+            <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase"> MIDI In :</label>
             <select 
               id="midi-in-select"
               value={activeInId}
@@ -288,42 +284,44 @@ export default function Menu(props) {
 
       {/* Choix Timbre 1, Timbre 2, Vocoder, Arp/FX */}
 
-      <div className="my-2 flex flex-col items-center space-y-2">
-        <button
-          disabled={state.patch.mode === 'Vocoder'}
-          className={activeTab === 'Timbre1' ? `btn btn-active` : `btn`}
-          onClick={() => {
-            dispatch(parameterUpdateTab('Timbre1'));
-          }}
-        >
-          Timbre 1
-        </button>
-        <button
-          disabled={state.patch.mode !== 'Multiple'}
-          className={activeTab === 'Timbre2' ? `btn btn-active` : `btn`}
-          onClick={() => {
-            dispatch(parameterUpdateTab('Timbre2'));
-          }}
-        >
-          Timbre 2
-        </button>
-        <button
-          disabled={state.patch.mode !== 'Vocoder'}
-          className={activeTab === 'Vocoder' ? `btn btn-active` : `btn`}
-          onClick={() => {
-            dispatch(parameterUpdateTab('Vocoder'));
-          }}
-        >
-          Vocoder
-        </button>
-        <button
-          className={activeTab === 'Effects' ? `btn btn-active` : `btn`}
-          onClick={() => {
-            dispatch(parameterUpdateTab('Effects'));
-          }}
-        >
-          Arp/FX
-        </button>
+
+      <div className="my-1 w-full">
+        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
+          Timbres
+        </div>
+
+        <div className="grid grid-cols-4 gap-1">
+          <button
+            disabled={state.patch.mode === 'Vocoder'}
+            className={activeTab === 'Timbre1' ? 'btn btn-active w-full' : 'btn w-full'}
+            onClick={() => dispatch(parameterUpdateTab('Timbre1'))}
+          >
+            Timbre 1
+          </button>
+
+          <button
+            disabled={state.patch.mode !== 'Multiple'}
+            className={activeTab === 'Timbre2' ? 'btn btn-active w-full' : 'btn w-full'}
+            onClick={() => dispatch(parameterUpdateTab('Timbre2'))}
+          >
+            Timbre 2
+          </button>
+
+          <button
+            disabled={state.patch.mode !== 'Vocoder'}
+            className={activeTab === 'Vocoder' ? 'btn btn-active w-full' : 'btn w-full'}
+            onClick={() => dispatch(parameterUpdateTab('Vocoder'))}
+          >
+            Vocoder
+          </button>
+
+          <button
+            className={activeTab === 'Effects' ? 'btn btn-active w-full' : 'btn w-full'}
+            onClick={() => dispatch(parameterUpdateTab('Effects'))}
+          >
+            Arp/FX
+          </button>
+        </div>
       </div>
 
       {/* LA PETITE CONSOLE DU MONITEUR MIDI HEXADÉCIMAL */}
