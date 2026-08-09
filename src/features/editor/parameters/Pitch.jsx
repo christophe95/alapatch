@@ -1,7 +1,7 @@
 import React from 'react';
 import Card from '../card';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectById, parameterUpdated } from './parameterSlice.js';
+import { selectById, parameterUpdated } from './parameterSlice.jsx';
 import { Select, Knob } from '../../utils/components';
 
 export default function Pitch(props) {
