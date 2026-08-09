@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 // Ajout de registerMidiLogger dans les imports
-import { initWebMidi, changeMidiOutputPort, changeMidiInputPort, registerMidiLogger } from '../../utils/midiHelper';
+import { initWebMidi, changeMidiOutputPort, changeMidiInputPort, registerMidiLogger, requestCurrentPatchDump, registerPatchReceiver } from '../../utils/midiHelper';
 import { Select } from '../utils/components';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -48,7 +48,12 @@ export default function Menu() {
         return updatedLogs.slice(-30);
       });
     });
-  }, []);
+  // Interception et injection automatique du fichier reçu dans l'état Redux d'Alapatch
+  registerPatchReceiver((rawSysExBytes) => {
+    // Alapatch possède déjà le décodeur natif pour transformer un fichier .syx en Store Redux
+    dispatch(parameterFromFile(return_store_from_file(rawSysExBytes)));
+  });
+}, [dispatch]);
 
   // Force le défilement automatique vers le bas de la console lors d'un flux d'octets
   useEffect(() => {
@@ -156,6 +161,17 @@ export default function Menu() {
         </div>
 
         <div className="my-3 flex flex-col items-center space-y-2">
+
+          {/* LE NOUVEAU BOUTON D'IMPORTATION MIDI DIRECT */}
+          <button
+            className="btn bg-indigo-600 text-white hover:bg-indigo-700 w-full font-semibold"
+            onClick={() => {
+              requestCurrentPatchDump();
+            }}
+          >
+            📥 Import from KORG
+          </button>
+
           <button
             className="btn"
             onClick={() => {
