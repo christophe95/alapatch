@@ -205,14 +205,27 @@ export default function Menu(props) {
 
         {/* CONTENEUR DES BOUTONS D'ACTIONS */}
 
-        <div className="my-1 flex flex-col space-y-2">
-          <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">DEVICE IMPORT</label>
+      <div className="my-1 w-full">
+        <div className="text-xs font-bold text-gray-500 uppercase mb-1">Device Import</div>
+
+        <div className="grid grid-cols-2 gap-1">
           <button
+           disabled={props.page === 'memory'}
+           className="btn bg-indigo-600 text-white hover:bg-indigo-700 w-full font-semibold"
+           onClick={() => requestCurrentPatchDump()}
+          >
+          📥 Patch
+         </button>
+
+          <button
+            disabled={props.page === 'editor'}
             className="btn bg-indigo-600 text-white hover:bg-indigo-700 w-full font-semibold"
-            onClick={() => {requestCurrentPatchDump();}}
-          >📥 Import from KORG
+            onClick={() => requestAllDump()}
+          >
+          📥 Global
           </button>
         </div>
+      </div>
 
       {/* CONTENEUR DES BOUTONS D'ACTIONS */}
 
