@@ -14,20 +14,27 @@ jobs:
       - name: Deploy via SSH
         shell: bash
         run: |
-          echo "Vérification locale de la clé SSH sur le Runner..."
-          if [ ! -f /root/.ssh/id_home ]; then
-            echo "ERREUR : La clé /root/.ssh/id_home est introuvable sur ce Runner !"
-            exit 1
-          fi
-
-          echo "Tentative de connexion et réplication..."
+          echo "Démarrage de la connexion et réplication forcée..."
           
-          # L'option -v (Verbose) va nous afficher TOUT le protocole de connexion dans les logs
-          ssh -v -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
+          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
             cd /opt/alapatch &&
-            echo '=> Dossier actuel :' && pwd &&
-            echo '=> Statut Git avant :' && git status &&
+            
+            echo '=> [1/4] Redéfinition du remote vers Gitea...' &&
+            git remote set-url origin https://mesdonneesadministratives.fr || git remote add origin https://mesdonneesadministratives.fr &&
+            
+            echo '=> [2/4] Nettoyage et Synchronisation...' &&
             git fetch --all &&
             git reset --hard origin/main &&
-            echo '=> Statut Git après :' && git log -1 --oneline
+            git clean -fd &&
+            
+            echo '=> [3/4] Build de l-image Docker (Node 22 / Vite)...' &&
+            docker build -t alapatch-prod . &&
+            
+            echo '=> [4/4] Recyclage du conteneur sur le port 4321...' &&
+            if [ \$(docker ps -aq -f name=microkorg-editor) ]; then
+              docker stop microkorg-editor && docker rm microkorg-editor;
+            fi &&
+            docker run -d --restart unless-stopped -p 4321:4321 --name microkorg-editor alapatch-prod &&
+            
+            echo '=> Déploiement terminé avec succès !'
           "
