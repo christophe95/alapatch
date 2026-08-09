@@ -74,8 +74,13 @@ const setupMidiInputListener = (inputPort) => {
   if (selectedMidiInput) selectedMidiInput.onmidimessage = null;
   selectedMidiInput = inputPort;
   selectedMidiInput.onmidimessage = (event) => {
-    // Intercepte et logue l'entrée MIDI (Depuis le microKORG)
-    logMidiActivity('in', '⬅️ IN ', event.data);
+    const data = event.data;
+
+    // PROTECTION ET FILTRAGE : Si l'octet est une horloge MIDI (0xF8), on l'ignore
+    if (data[0] === 0xF8) return;
+
+    // Intercepte et logue uniquement les vrais messages (SysEx, Notes, Molettes)
+    logMidiActivity('in', '⬅️ IN ', data);
   };
 };
 
