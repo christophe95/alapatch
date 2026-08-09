@@ -1,19 +1,27 @@
-# Étape 1 : Compilation native ultra-rapide sous Node 22
+# Étape 1 : Compilation isolée sous Node 22 (Légère et rapide)
 FROM node:22-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
-# Plus besoin de flags de contournement, l'arbre est sain
-RUN npm install
-COPY . .
-RUN npm run build
 
-# Étape 2 : Serveur Web de diffusion de production (Nginx)
+# Copie uniquement les fichiers de configuration pour optimiser le cache Docker
+COPY package*.json ./
+
+# Installe les dépendances en mode strict et silencieux pour la CI/CD
+RUN npm ci
+
+# Copie le reste du code source
+COPY . .
+
+# Force la compilation de production via Vite (sans interactivité)
+RUN CI=true npm run build
+
+# Étape 2 : Serveur de diffusion Nginx (Dernière génération)
 FROM nginx:alpine
-# ATTENTION : Vite génère ses fichiers dans le dossier "dist" (et non plus "build")
+
+# Vite compile tout dans le dossier "dist" (et non plus "build")
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Ajustement pour que Nginx écoute directement sur votre port dédié 4321
-RUN sed -i 's/listen       80;/listen       4321;/g' /etc/nginx/conf.d/default.conf
+# Modification propre de la configuration par défaut de Nginx pour forcer le port 4321
+RUN echo 'server { listen 4321; location / { root /usr/share/nginx/html; index index.html; try_files $uri $uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
 
 EXPOSE 4321
 CMD ["nginx", "-g", "daemon off;"]
