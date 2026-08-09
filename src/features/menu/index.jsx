@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { initWebMidi, changeSelectedMidiPort } from '../../utils/midiHelper';
+// Import des nouvelles fonctions d'aiguillage In/Out
+import { initWebMidi, changeMidiOutputPort, changeMidiInputPort } from '../../utils/midiHelper';
 import { Select } from '../utils/components';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -13,8 +14,10 @@ import { return_store_from_file, return_file_from_store } from '../io';
 import download from 'downloadjs';
 
 export default function Menu() {
-  const [midiDevices, setMidiDevices] = useState([]);
-  const [activePortId, setActivePortId] = useState('');
+  const [midiOutputs, setMidiOutputs] = useState([]);
+  const [midiInputs, setMidiInputs] = useState([]);
+  const [activeOutId, setActiveOutId] = useState('');
+  const [activeInId, setActiveInId] = useState('');
   const [file, setFile] = useState(null);
   const fileRef = useRef(null);
   
@@ -23,20 +26,27 @@ export default function Menu() {
   const dispatch = useDispatch();
   const reader = new FileReader();
 
-  // Chargement initial des périphériques MIDI
+  // Chargement des listes de câbles d'entrée et de sortie
   useEffect(() => {
-    initWebMidi().then(devices => {
-      setMidiDevices(devices);
-      if (devices.length > 0) {
-        setActivePortId(devices[0].id);
-      }
+    initWebMidi().then(midiData => {
+      setMidiOutputs(midiData.outputs);
+      setMidiInputs(midiData.inputs);
+      
+      if (midiData.outputs.length > 0) setActiveOutId(midiData.outputs[0].id);
+      if (midiData.inputs.length > 0) setActiveInId(midiData.inputs[0].id);
     });
   }, []);
 
-  const handleMidiChange = (e) => {
+  const handleMidiOutChange = (e) => {
     const portId = e.target.value;
-    setActivePortId(portId);
-    changeSelectedMidiPort(portId);
+    setActiveOutId(portId);
+    changeMidiOutputPort(portId);
+  };
+
+  const handleMidiInChange = (e) => {
+    const portId = e.target.value;
+    setActiveInId(portId);
+    changeMidiInputPort(portId);
   };
 
   const loadFile = (f) => {
@@ -82,25 +92,49 @@ export default function Menu() {
           />
         </div>
 
-        {/* Sélecteur de Port MIDI Corrigé pour React (className) */}
-        <div className="my-3 flex flex-col space-y-1 bg-gray-100 p-2 rounded border border-gray-300">
-          <label htmlFor="midi-select" className="text-xs font-bold text-gray-500 uppercase">
-            Port de sortie MIDI :
-          </label>
-          <select 
-            id="midi-select"
-            value={activePortId}
-            onChange={handleMidiChange}
-            className="w-full bg-white text-sm text-gray-800 px-2 py-1 rounded border border-gray-400 focus:outline-none focus:border-indigo-500"
-          >
-            {midiDevices.length === 0 ? (
-              <option value="">Aucun câble trouvé</option>
-            ) : (
-              midiDevices.map(device => (
-                <option key={device.id} value={device.id}>{device.name}</option>
-              ))
-            )}
-          </select>
+        {/* BLOC DOUBLE SÉLECTEUR MIDI (IN & OUT) */}
+        <div className="my-3 flex flex-col space-y-3 bg-gray-100 p-2 rounded border border-gray-300">
+          {/* Section SORTIE (MIDI Out) */}
+          <div className="flex flex-col space-y-1">
+            <label htmlFor="midi-out-select" className="text-xs font-bold text-gray-500 uppercase">
+              MIDI Out (Vers Synthé) :
+            </label>
+            <select 
+              id="midi-out-select"
+              value={activeOutId}
+              onChange={handleMidiOutChange}
+              className="w-full bg-white text-sm text-gray-800 px-2 py-1 rounded border border-gray-400 focus:outline-none focus:border-indigo-500"
+            >
+              {midiOutputs.length === 0 ? (
+                <option value="">Aucune sortie trouvée</option>
+              ) : (
+                midiOutputs.map(device => (
+                  <option key={device.id} value={device.id}>{device.name}</option>
+                ))
+              )}
+            </select>
+          </div>
+
+          {/* Section ENTRÉE (MIDI In) */}
+          <div className="flex flex-col space-y-1">
+            <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">
+              MIDI In (Depuis Synthé) :
+            </label>
+            <select 
+              id="midi-in-select"
+              value={activeInId}
+              onChange={handleMidiInChange}
+              className="w-full bg-white text-sm text-gray-800 px-2 py-1 rounded border border-gray-400 focus:outline-none focus:border-indigo-500"
+            >
+              {midiInputs.length === 0 ? (
+                <option value="">Aucune entrée trouvée</option>
+              ) : (
+                midiInputs.map(device => (
+                  <option key={device.id} value={device.id}>{device.name}</option>
+                ))
+              )}
+            </select>
+          </div>
         </div>
 
         <div className="my-3 flex flex-col items-center space-y-2">
