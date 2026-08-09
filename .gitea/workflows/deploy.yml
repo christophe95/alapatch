@@ -16,17 +16,18 @@ jobs:
         run: |
           echo "Démarrage de la connexion et réplication Git native..."
           
-          # Le Runner utilise sa clé id_home pour piloter le serveur
           ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
             cd /opt/alapatch &&
             
             echo '=> [1/4] Configuration du Remote en SSH natif...' &&
             git remote set-url origin git@git.mesdonneesadministratives.fr:cvancau/alapatch.git || git remote add origin git@git.mesdonneesadministratives.fr:cvancau/alapatch.git &&
             
-            echo '=> [2/4] Synchronisation Git native avec la clé git@home du serveur...' &&
-            # Correction cruciale : Appel explicite de la clé personnalisée /root/.ssh/git@home
-            GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/git@home' git fetch --all &&
-            GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/git@home' git reset --hard origin/main &&
+            echo '=> [2/4] Synchronisation Git native...' &&
+            # On laisse Git chercher la clé tout seul (comme pour votre autre dépôt)
+            # On lui demande juste d'ignorer la vérification de l'hôte
+            git config core.sshCommand 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes' &&
+            git fetch --all &&
+            git reset --hard origin/main &&
             git clean -fd &&
             
             echo '=> [3/4] Build de l-image Docker (Node 22 / Vite)...' &&
