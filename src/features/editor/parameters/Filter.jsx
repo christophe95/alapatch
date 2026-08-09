@@ -2,7 +2,7 @@ import React from 'react';
 import Card from '../card';
 import { Select, Knob } from '../../utils/components';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectById, parameterUpdated } from './parameterSlice.js';
+import { selectById, parameterUpdated } from './parameterSlice.jsx';
 
 export default function Filter(props) {
   const parameters = useSelector((state) => selectById(state, props.id));
