@@ -110,7 +110,7 @@ export default function Menu() {
   }, [state.patch.mode, dispatch]);
 
   return (
-    <div className="h-screen col-span-1 flex flex-col justify-between border-solid border-r border-gray-300 bg-white px-2 py-2">
+    <div className="h-screen col-span-1 flex flex-col justify-between border-solid border-r border-gray-300 bg-white px-2 py-2 text-sm">
       <div className="menu-patch-container">
         <div className="patch-name">
           <input
