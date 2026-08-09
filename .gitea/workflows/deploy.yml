@@ -1,4 +1,4 @@
-name: Deploy to home (Isolated Port)
+name: Deploy to home
 
 on:
   push:
@@ -11,34 +11,24 @@ jobs:
     runs-on: [self-hosted, linux]
 
     steps:
-      # 1. Récupération du code source sur le Runner
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      # 2. Compilation de l'application sur le Runner Gitea
-      - name: Build Application Locally
+      - name: Deploy via SSH
         run: |
-          npm install --legacy-peer-deps
-          npm run build
-
-      # 3. Déploiement isolé vers le serveur home
-      - name: Deploy to Isolated Directory
-        run: |
-          # Envoie le dossier build compilé dans un répertoire dédié /opt/alapatch-dist
-          tar -czf - -C build . | ssh -o StrictHostKeyChecking=no -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
-            mkdir -p /opt/alapatch-dist &&
-            tar -xzf - -C /opt/alapatch-dist &&
+          ssh -o StrictHostKeyChecking=no -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
+            # 1. Alignement strict du code source sur la branche main
+            cd /opt/alapatch &&
+            git fetch --all &&
+            git reset --hard origin/main &&
             
-            # Installe l'utilitaire http-server globalement si absent pour gérer le port
-            if ! command -v http-server &> /dev/null; then
-              npm install -g http-server
-            fi &&
+            # 2. Nettoyage des anciennes dépendances
+            rm -rf node_modules build &&
             
-            # Arrête proprement l'ancien serveur de test s'il tourne sur le port 4321
+            # 3. Compilation locale sur le Node v22 du serveur de destination
+            npm install --legacy-peer-deps &&
+            npm run build &&
+            
+            # 4. Nettoyage de l'ancien processus en tâche de fond sur le port 4321
             fuser -k 4321/tcp || true &&
             
-            # Lance le serveur en arrière-plan sur le port 4321
-            nohup http-server /opt/alapatch-dist -p 4321 -a 0.0.0.0 > /dev/null 2>&1 &
+            # 5. Lancement isolé en tâche de fond (0.0.0.0 écoute sur toutes les interfaces)
+            nohup npx serve -s build -l 4321 > /dev/null 2>&1 &
           "
-
-
