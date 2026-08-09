@@ -5,6 +5,7 @@ import {
   changeMidiInputPort, 
   registerMidiLogger, 
   requestCurrentPatchDump, 
+  requestAllDump,
   registerPatchReceiver 
 } from '../../utils/midiHelper';
 import { Select } from '../utils/components';
