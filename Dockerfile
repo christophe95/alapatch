@@ -2,11 +2,11 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copie uniquement les fichiers de configuration pour optimiser le cache Docker
+# Copie le fichier de configuration épuré
 COPY package*.json ./
 
-# Installe les dépendances en mode strict et silencieux pour la CI/CD
-RUN npm ci
+# Remplacement de "npm ci" par "npm install" avec des drapeaux d'automatisation propres
+RUN npm install --no-audit --no-fund
 
 # Copie le reste du code source
 COPY . .
@@ -14,10 +14,10 @@ COPY . .
 # Force la compilation de production via Vite (sans interactivité)
 RUN CI=true npm run build
 
-# Étape 2 : Serveur de diffusion Nginx (Dernière génération)
+# Étape 2 : Serveur de diffusion Nginx
 FROM nginx:alpine
 
-# Vite compile tout dans le dossier "dist" (et non plus "build")
+# Récupération des fichiers compilés par Vite (dossier dist)
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Modification propre de la configuration par défaut de Nginx pour forcer le port 4321
@@ -25,3 +25,4 @@ RUN echo 'server { listen 4321; location / { root /usr/share/nginx/html; index i
 
 EXPOSE 4321
 CMD ["nginx", "-g", "daemon off;"]
+
