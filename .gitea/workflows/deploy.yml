@@ -1,0 +1,26 @@
+name: Deploy to home
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux]
+
+    steps:
+      - name: Deploy via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
+            cd /opt/alapatch &&
+            git fetch --all &&
+            git reset --hard origin/master &&
+            docker build --no-cache -t alapatch-prod . &&
+            if [ \$(docker ps -aq -f name=microkorg-editor) ]; then
+              docker stop microkorg-editor &&
+              docker rm microkorg-editor
+            fi &&
+            docker run -d --restart unless-stopped -p 4321:4321 --name microkorg-editor alapatch-prod
+          "
