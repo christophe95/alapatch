@@ -14,15 +14,16 @@ jobs:
       - name: Deploy via SSH
         shell: bash
         run: |
-          echo "Démarrage de la connexion et réplication forcée..."
+          echo "Démarrage de la connexion et réplication Git native..."
           
-          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@git.mesdonneesadministratives.fr "
+          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
             cd /opt/alapatch &&
             
-            echo '=> [1/4] Redéfinition du remote vers Gitea...' &&
-            git remote set-url origin https://git.mesdonneesadministratives.fr || git remote add origin https://git.mesdonneesadministratives.fr &&
+            echo '=> [1/4] Configuration du Remote en SSH natif...' &&
+            # Configuration propre utilisant l'utilisateur générique 'git' de Gitea
+            git remote set-url origin git@git.mesdonneesadministratives.fr:cvancau/alapatch.git || git remote add origin git@git.mesdonneesadministratives.fr:cvancau/alapatch.git &&
             
-            echo '=> [2/4] Nettoyage et Synchronisation...' &&
+            echo '=> [2/4] Synchronisation Git native...' &&
             git fetch --all &&
             git reset --hard origin/main &&
             git clean -fd &&
