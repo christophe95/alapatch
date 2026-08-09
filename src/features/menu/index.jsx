@@ -66,7 +66,8 @@ export default function Menu() {
         console.error('[MIDI] erreur décodage/injection:', error);
       }
     });
-
+  }, [dispatch]);
+  
   // Force le défilement automatique du moniteur vers le bas
   useEffect(() => {
     if (consoleBottomRef.current) {
