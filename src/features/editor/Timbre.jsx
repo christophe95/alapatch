@@ -8,7 +8,7 @@ import EG from './parameters/EG';
 import Amp from './parameters/Amp';
 import LFO from './parameters/LFO';
 import Patches from './parameters/Patches';
-import { selectById } from './timbreSlice.js';
+import { selectById } from './timbreSlice.jsx';
 
 export default function Timbre(props) {
   const ids = useSelector((state) => selectById(state, props.id));
