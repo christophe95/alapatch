@@ -1,14 +1,37 @@
 let selectedMidiOutput = null;
 let selectedMidiInput = null;
 
+// Fonctions de rappel pour transmettre les logs à l'interface React
+let onLogCallback = null;
+
 /**
- * Initialise l'accès MIDI et renvoie les entrées et sorties disponibles
- * @returns {Promise<{inputs: Array, outputs: Array}>}
+ * Permet au composant React d'enregistrer sa fonction d'affichage des logs
  */
+export const registerMidiLogger = (callback) => {
+  onLogCallback = callback;
+};
+
+// Utilitaire pour formater un tableau de bytes en chaîne Hexadécimale propre
+const bytesToHexStr = (bytes) => {
+  return Array.from(bytes)
+    .map(b => b.toString(16).toUpperCase().padStart(2, '0'))
+    .join(' ');
+};
+
+const logMidiActivity = (direction, directionArrow, rawData) => {
+  if (onLogCallback) {
+    const timestamp = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const hexString = bytesToHexStr(rawData);
+    onLogCallback({
+      text: `[${timestamp}] ${directionArrow} ${hexString}`,
+      type: direction // 'in' ou 'out' pour la couleur
+    });
+  }
+};
+
 export const initWebMidi = () => {
   return new Promise((resolve) => {
     if (!navigator.requestMIDIAccess) {
-      console.error("[MIDI] L'API Web MIDI n'est pas supportée.");
       return resolve({ inputs: [], outputs: [] });
     }
 
@@ -17,7 +40,6 @@ export const initWebMidi = () => {
         const outputs = Array.from(midiAccess.outputs.values());
         const inputs = Array.from(midiAccess.inputs.values());
         
-        // Sélection par défaut du premier périphérique trouvé si non défini
         if (outputs.length > 0 && !selectedMidiOutput) selectedMidiOutput = outputs[0];
         if (inputs.length > 0 && !selectedMidiInput) setupMidiInputListener(inputs[0]);
 
@@ -26,16 +48,10 @@ export const initWebMidi = () => {
           inputs: inputs.map(port => ({ id: port.id, name: port.name }))
         });
       })
-      .catch(err => {
-        console.error("[MIDI] Accès refusé : ", err);
-        resolve({ inputs: [], outputs: [] });
-      });
+      .catch(() => resolve({ inputs: [], outputs: [] }));
   });
 };
 
-/**
- * Modifie le port de sortie (MIDI Out)
- */
 export const changeMidiOutputPort = (portId) => {
   if (!navigator.requestMIDIAccess) return;
   navigator.requestMIDIAccess({ sysex: true }).then((midiAccess) => {
@@ -45,9 +61,6 @@ export const changeMidiOutputPort = (portId) => {
   });
 };
 
-/**
- * Modifie le port d'entrée (MIDI In) et branche l'écouteur
- */
 export const changeMidiInputPort = (portId) => {
   if (!navigator.requestMIDIAccess) return;
   navigator.requestMIDIAccess({ sysex: true }).then((midiAccess) => {
@@ -57,27 +70,21 @@ export const changeMidiInputPort = (portId) => {
   });
 };
 
-/**
- * Active l'écoute des messages envoyés par le microKORG
- */
 const setupMidiInputListener = (inputPort) => {
-  if (selectedMidiInput) {
-    selectedMidiInput.onmidimessage = null; // Nettoie l'ancien écouteur
-  }
+  if (selectedMidiInput) selectedMidiInput.onmidimessage = null;
   selectedMidiInput = inputPort;
   selectedMidiInput.onmidimessage = (event) => {
-    const data = event.data;
-    // C'est ici que l'on interceptera plus tard les dumps SysEx reçus du microKORG
-    console.log("[MIDI IN] Message reçu du microKORG :", Array.from(data).map(b => b.toString(16).toUpperCase()));
+    // Intercepte et logue l'entrée MIDI (Depuis le microKORG)
+    logMidiActivity('in', '⬅️ IN ', event.data);
   };
-  console.log(`[MIDI IN] Écoute active sur : ${selectedMidiInput.name}`);
 };
 
-/**
- * Envoie la trame SysEx au microKORG (MIDI Out)
- */
 export const sendMicroKorgParam = (parameterId, value) => {
   if (!selectedMidiOutput) return;
   const sysExMessage = [0xF0, 0x42, 0x30, 0x58, 0x41, parameterId, value, 0xF7];
+  
   selectedMidiOutput.send(sysExMessage);
+  
+  // Logue la sortie MIDI (Vers le microKORG)
+  logMidiActivity('out', '➡️ OUT', sysExMessage);
 };
