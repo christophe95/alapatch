@@ -12,26 +12,11 @@ jobs:
 
     steps:
       - name: Deploy via SSH
+        shell: bash
         run: |
-          # -tt : force l'affichage en direct des logs Docker
-          ssh -tt -o StrictHostKeyChecking=no -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr '
-            cd /opt/alapatch &&
-            
-            echo "=== [1/4] Synchronisation avec Gitea ===" &&
-            git fetch --all &&
-            git reset --hard origin/main &&
-            
-            echo "=== [2/4] Compilation de l-image Docker ===" &&
-            docker build -t alapatch-prod . &&
-            
-            echo "=== [3/4] Nettoyage de l-ancienne instance ===" &&
-            if [ $(docker ps -aq -f name=microkorg-editor) ]; then
-              docker stop microkorg-editor &&
-              docker rm microkorg-editor
-            fi &&
-            
-            echo "=== [4/4] Lancement du nouvel éditeur ===" &&
-            docker run -d --restart unless-stopped -p 4321:4321 --name microkorg-editor alapatch-prod &&
-            
-            echo "=== DEPLOIMENT TERMINE AVEC SUCCES ==="
-          '
+          echo "Démarrage de la connexion vers le serveur distant..."
+          
+          # Exécution de la commande sur une seule ligne condensée pour éviter les bugs d'interpréteur du runner
+          ssh -o StrictHostKeyChecking=no -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "cd /opt/alapatch && git fetch --all && git reset --hard origin/main && docker build -t alapatch-prod . && if [ \$(docker ps -aq -f name=microkorg-editor) ]; then docker stop microkorg-editor && docker rm microkorg-editor; fi && docker run -d --restart unless-stopped -p 4321:4321 --name microkorg-editor alapatch-prod"
+          
+          echo "Le script de déploiement distant a été transmis avec succès."
