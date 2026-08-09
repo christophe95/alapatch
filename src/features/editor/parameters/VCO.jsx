@@ -86,7 +86,7 @@ export const AudioIn = (props) => {
 
   return (
     <Card className={props.className} header={props.name}>
-      <div className="-mt-3 flex flex-col items-stretch space-y-4">
+      <div className="-mt-3 flex flex-col items-stretch space-y-1">
         <div className="flex flex-row">
           <div className="flex flex-col items-center w-1/2">
             <h3>Gate Sense</h3>
