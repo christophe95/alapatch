@@ -14,15 +14,20 @@ jobs:
       - name: Deploy via SSH
         shell: bash
         run: |
-          echo "Démarrage de la réplication vers le serveur distant..."
+          echo "Vérification locale de la clé SSH sur le Runner..."
+          if [ ! -f /root/.ssh/id_home ]; then
+            echo "ERREUR : La clé /root/.ssh/id_home est introuvable sur ce Runner !"
+            exit 1
+          fi
+
+          echo "Tentative de connexion et réplication..."
           
-          # Version ultra-légère : uniquement la synchronisation des fichiers Git
-          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
+          # L'option -v (Verbose) va nous afficher TOUT le protocole de connexion dans les logs
+          ssh -v -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
             cd /opt/alapatch &&
-            echo '=> Synchronisation Git en cours...' &&
+            echo '=> Dossier actuel :' && pwd &&
+            echo '=> Statut Git avant :' && git status &&
             git fetch --all &&
             git reset --hard origin/main &&
-            echo '=> Réplication des fichiers terminée avec succès.'
+            echo '=> Statut Git après :' && git log -1 --oneline
           "
-          
-          echo "Le pipeline Gitea Actions a fini son travail."
