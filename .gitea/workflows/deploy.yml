@@ -16,14 +16,15 @@ jobs:
         run: |
           echo "Démarrage de la connexion et réplication Git native..."
           
+          # Connexion du Runner vers le serveur applicatif 'home'
           ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
             cd /opt/alapatch &&
             
-            echo '=> [1/4] Configuration du Remote en SSH natif...' &&
-            git remote set-url origin git@git.mesdonneesadministratives.fr:cvancau/alapatch.git || git remote add origin git@git.mesdonneesadministratives.fr:cvancau/alapatch.git &&
+            echo '=> [1/4] Configuration du Remote avec la VRAIE URL SSH...' &&
+            # On applique l'adresse de l'hôte vm-dev identifiée
+            git remote set-url origin git@vm-dev.mesdonneesadministratives.fr:cvancau/alapatch.git || git remote add origin git@vm-dev.mesdonneesadministratives.fr:cvancau/alapatch.git &&
             
             echo '=> [2/4] Synchronisation Git avec la clé dédiée alapatch...' &&
-            # On force l'usage de notre nouvelle clé dédiée id_alapatch
             git config core.sshCommand 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_alapatch' &&
             git fetch --all &&
             git reset --hard origin/main &&
