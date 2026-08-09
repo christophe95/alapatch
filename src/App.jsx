@@ -8,7 +8,7 @@ function App() {
     return false;
   };
   return (
-    <div className="bg-gray-200 grid grid-cols-6 grid-rows-1 gap-4">
+    <div className="h-screen overflow-hidden bg-gray-200 grid grid-cols-6 grid-rows-1 gap-2">
       <Menu />
       <Editor />
     </div>
