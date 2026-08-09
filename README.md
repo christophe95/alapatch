@@ -22,3 +22,5 @@ Alapatch currently only supports loading and saving patch files in the .SYSEX fo
 # Link to the MicroKORG Midi Implementation
 
 http://i.korg.com/uploads/Support/MK1_633652915168960000.pdf
+
+Update 9.08.2026
