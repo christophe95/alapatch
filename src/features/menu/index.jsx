@@ -123,6 +123,24 @@ export default function Menu(props) {
     <div className="h-screen col-span-1 flex flex-col justify-between border-solid border-r border-gray-300 bg-white px-2 py-2 text-xs">
       <div className="menu-patch-container">
 
+      {/* 2 boutons Editor / Memory */}
+      <div className="my-1 w-full">
+        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">MENUS</div>
+        <div className="flex gap-1 w-full">
+          <button
+            className={props.page === 'editor' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
+            onClick={() => props.setPage('editor')}
+          >Editor
+          </button>
+
+          <button
+            className={props.page === 'memory' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
+            onClick={() => props.setPage('memory')}
+          >Memory
+          </button>
+        </div>
+      </div>
+
         {/* BLOC Patch Name */}
 
         <div className="patch-name">
@@ -186,6 +204,7 @@ export default function Menu(props) {
         {/* CONTENEUR DES BOUTONS D'ACTIONS */}
 
         <div className="my-1 flex flex-col items-center space-y-2">
+          <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase"> TYPE ACTION</label>
           <button
             className="btn bg-indigo-600 text-white hover:bg-indigo-700 w-full font-semibold"
             onClick={() => {requestCurrentPatchDump();}}
@@ -224,7 +243,6 @@ export default function Menu(props) {
           </button>
 
       </div>
-
         <input
           className="hidden"
           type="file"
@@ -232,7 +250,6 @@ export default function Menu(props) {
           ref={fileRef}
           onChange={(e) => loadFile(e.target.files[0])}
         />
-
       </div>
 
       {/* liste single,multiple,vocoder */}
