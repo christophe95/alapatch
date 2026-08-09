@@ -1,6 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
-// Ajout de registerMidiLogger dans les imports
-import { initWebMidi, changeMidiOutputPort, changeMidiInputPort, registerMidiLogger, requestCurrentPatchDump, registerPatchReceiver } from '../../utils/midiHelper';
+import { 
+  initWebMidi, 
+  changeMidiOutputPort, 
+  changeMidiInputPort, 
+  registerMidiLogger, 
+  requestCurrentPatchDump, 
+  registerPatchReceiver 
+} from '../../utils/midiHelper';
 import { Select } from '../utils/components';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -18,8 +24,6 @@ export default function Menu() {
   const [midiInputs, setMidiInputs] = useState([]);
   const [activeOutId, setActiveOutId] = useState('');
   const [activeInId, setActiveInId] = useState('');
-  
-  // Nouvel état local pour stocker l'historique des octets MIDI
   const [midiLogs, setMidiLogs] = useState([]);
   const consoleBottomRef = useRef(null);
 
@@ -32,7 +36,7 @@ export default function Menu() {
   const reader = new FileReader();
 
   useEffect(() => {
-    // Initialisation des ports
+    // 1. Initialisation des ports MIDI physiques au démarrage
     initWebMidi().then(midiData => {
       setMidiOutputs(midiData.outputs);
       setMidiInputs(midiData.inputs);
@@ -40,22 +44,31 @@ export default function Menu() {
       if (midiData.inputs.length > 0) setActiveInId(midiData.inputs[0].id);
     });
 
-    // Branchement de notre console sur le Helper MIDI
+    // 2. Écoute active de la console d'activité noire
     registerMidiLogger((newLog) => {
       setMidiLogs((prevLogs) => {
         const updatedLogs = [...prevLogs, newLog];
-        // Conserve uniquement les 30 derniers messages pour éviter de saturer la mémoire
-        return updatedLogs.slice(-30);
+        return updatedLogs.slice(-30); // Limite l'historique à 30 lignes
       });
     });
-  // Interception et injection automatique du fichier reçu dans l'état Redux d'Alapatch
-  registerPatchReceiver((rawSysExBytes) => {
-    // Alapatch possède déjà le décodeur natif pour transformer un fichier .syx en Store Redux
-    dispatch(parameterFromFile(return_store_from_file(rawSysExBytes)));
-  });
-}, [dispatch]);
 
-  // Force le défilement automatique vers le bas de la console lors d'un flux d'octets
+    // 3. ÉCOUTE ET MISE À JOUR AUTOMATIQUE DU SON PROVENANT DU MICROKORG
+    registerPatchReceiver((rawSysExBytes) => {
+      try {
+        // Convertit les octets physiques du microKORG en modèle de données exploitable par l'application
+        const parsedStoreData = return_store_from_file(rawSysExBytes);
+        
+        // Injecte les données décodées dans le Store Redux pour forcer la mise à jour instantanée de l'écran
+        dispatch(parameterFromFile(parsedStoreData));
+        
+        console.log("[ALAPATCH] Structure des paramètres synchronisée avec le matériel.");
+      } catch (error) {
+        console.error("[ALAPATCH] Échec du décodage du dump matériel :", error);
+      }
+    });
+  }, [dispatch]);
+
+  // Force le défilement automatique du moniteur vers le bas
   useEffect(() => {
     if (consoleBottomRef.current) {
       consoleBottomRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -160,9 +173,8 @@ export default function Menu() {
           </div>
         </div>
 
+        {/* CONTENEUR DES BOUTONS D'ACTIONS */}
         <div className="my-3 flex flex-col items-center space-y-2">
-
-          {/* LE NOUVEAU BOUTON D'IMPORTATION MIDI DIRECT */}
           <button
             className="btn bg-indigo-600 text-white hover:bg-indigo-700 w-full font-semibold"
             onClick={() => {
@@ -173,23 +185,25 @@ export default function Menu() {
           </button>
 
           <button
-            className="btn"
+            className="btn w-full"
             onClick={() => {
               dispatch(parameterRefreshAll());
             }}
           >
             New Patch
           </button>
+          
           <button
-            className="btn"
+            className="btn w-full"
             onClick={() => {
               fileRef.current.click();
             }}
           >
             Load Patch
           </button>
+          
           <button
-            className="btn"
+            className="btn w-full"
             onClick={() => {
               download(
                 return_file_from_store(state),
@@ -200,6 +214,7 @@ export default function Menu() {
           >
             Save Patch
           </button>
+          
           <input
             className="hidden"
             type="file"
@@ -210,6 +225,7 @@ export default function Menu() {
             }}
           />
         </div>
+        
         <div className="patch-settings">
           <Select
             className="w-full select"
