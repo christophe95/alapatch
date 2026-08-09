@@ -27,3 +27,4 @@ Updated 9.08.2026 :
  - to add sending and receiving MIDI features from the device
  - to revamp slightly the interface
  - upgrade react content with nodejs 22 version
+ - docker ready to use
