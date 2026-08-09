@@ -13,7 +13,7 @@ import { selectById } from './timbreSlice.jsx';
 export default function Timbre(props) {
   const ids = useSelector((state) => selectById(state, props.id));
   return (
-    <div className="flex flex-wrap justify-between py-6 px-4">
+    <div className="flex flex-wrap gap-1 p-1 text-xs">
       <VCO
         name="VCO 1"
         className="flex-grow w-80"
