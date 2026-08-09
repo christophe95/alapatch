@@ -165,6 +165,7 @@ export default function Menu(props) {
         {/* BLOC DOUBLE SÉLECTEUR MIDI */}
 
         <div className="my-1 flex flex-col space-y-3 bg-gray-100 p-2 rounded border border-gray-300">
+          <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">MIDI SELECTOR</label>
           <div className="flex flex-col space-y-1">
             <label htmlFor="midi-out-select" className="text-xs font-bold text-gray-500 uppercase"> MIDI Out :</label>
             <select 
@@ -204,7 +205,7 @@ export default function Menu(props) {
 
         {/* CONTENEUR DES BOUTONS D'ACTIONS */}
 
-        <div className="my-1 flex flex-col items-center space-y-2">
+        <div className="my-1 flex flex-col space-y-2">
           <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase"> TYPE ACTION</label>
           <button
             className="btn bg-indigo-600 text-white hover:bg-indigo-700 w-full font-semibold"
