@@ -81,7 +81,7 @@ export default function Pitch(props) {
         </section>
         <section className="w-1/3">
           <div className="flex flex-col items-center">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3>
               Unison Detune
             </h3>
             <Knob
@@ -98,7 +98,7 @@ export default function Pitch(props) {
             />
           </div>
           <div className="flex flex-col items-center">
-            <h3 className="text-lg font-semibold text-gray-900">Portamento</h3>
+            <h3>Portamento</h3>
             <Knob
               value={parameters.portamento}
               max={127}
