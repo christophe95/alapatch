@@ -19,6 +19,9 @@ export const registerMidiLogger = (callback) => { onLogCallback = callback; };
  */
 export const registerPatchReceiver = (callback) => {
   onPatchReceivedCallback = callback;
+  if (!parsedStoreData.patch.name.trim()) {
+  parsedStoreData.patch.name = '------------';
+ }
 };
 
 const bytesToHexStr = (bytes) => {
