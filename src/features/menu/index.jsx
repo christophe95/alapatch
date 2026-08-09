@@ -53,20 +53,23 @@ export default function Menu() {
     });
 
     // 3. ÉCOUTE ET MISE À JOUR AUTOMATIQUE DU SON PROVENANT DU MICROKORG
-    registerPatchReceiver((rawSysExBytes) => {
-      try {
-        // Convertit les octets physiques du microKORG en modèle de données exploitable par l'application
-        const parsedStoreData = return_store_from_file(rawSysExBytes);
-        
-        // Injecte les données décodées dans le Store Redux pour forcer la mise à jour instantanée de l'écran
-        dispatch(parameterFromFile(parsedStoreData));
-        
-        console.log("[ALAPATCH] Structure des paramètres synchronisée avec le matériel.");
-      } catch (error) {
-        console.error("[ALAPATCH] Échec du décodage du dump matériel :", error);
-      }
-    });
-  }, [dispatch]);
+registerPatchReceiver((rawSysExBytes) => {
+  try {
+    console.log('[MIDI] longueur SysEx:', rawSysExBytes.length);
+
+    const parsedStoreData = return_store_from_file(rawSysExBytes);
+
+    console.log('[MIDI] patch décodé:', parsedStoreData.patch);
+    console.log('[MIDI] entités:', Object.keys(parsedStoreData));
+
+    // Injection explicite sous forme de tableau d'entités
+    dispatch(parameterFromFile(Object.values(parsedStoreData)));
+
+    console.log('[MIDI] Redux mis à jour');
+  } catch (error) {
+    console.error('[MIDI] erreur décodage/injection:', error);
+  }
+});
 
   // Force le défilement automatique du moniteur vers le bas
   useEffect(() => {
