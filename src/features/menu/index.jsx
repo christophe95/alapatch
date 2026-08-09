@@ -125,20 +125,20 @@ export default function Menu(props) {
 
       {/* 2 boutons Editor / Memory */}
       <div className="my-1 w-full">
-        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">MENUS</div>
-        <div className="flex gap-1 w-full">
-          <button
-            className={props.page === 'editor' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
-            onClick={() => props.setPage('editor')}
-          >Editor
-          </button>
+          <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">MENU/label>
+          <div className="flex gap-1 w-full">
+            <button
+              className={props.page === 'editor' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
+              onClick={() => props.setPage('editor')}
+            >Editor
+            </button>
 
-          <button
-            className={props.page === 'memory' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
-            onClick={() => props.setPage('memory')}
-          >Memory
-          </button>
-        </div>
+            <button
+              className={props.page === 'memory' ? 'btn btn-active w-1/2' : 'btn w-1/2'}
+              onClick={() => props.setPage('memory')}
+            >Memory
+            </button>
+          </div>
       </div>
 
         {/* BLOC Patch Name */}
