@@ -81,7 +81,7 @@ export const changeMidiInputPort = (portId) => {
   });
 };
 
-export const changeKeyboardInputPort = (portId) => {
+export const changeKeyboardInputPort = (portId, channel = 1) => {
   if (!navigator.requestMIDIAccess) return;
 
   navigator.requestMIDIAccess({ sysex: true }).then((midiAccess) => {
@@ -97,6 +97,11 @@ export const changeKeyboardInputPort = (portId) => {
     if (selectedKeyboardInput) {
       selectedKeyboardInput.onmidimessage = (event) => {
         const data = Array.from(event.data);
+        const command = data[0] & 0xF0;
+
+        if (command >= 0x80 && command <= 0xE0) {
+          data[0] = command | ((channel - 1) & 0x0F);
+        }
 
         if (selectedMidiOutput) {
           selectedMidiOutput.send(data);
