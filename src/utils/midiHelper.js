@@ -9,6 +9,7 @@ let selectedMidiOutput = null;
 let selectedMidiInput = null;
 let onLogCallback = null;
 let onAllDumpReceivedCallback = null;
+let selectedKeyboardInput = null;
 
 // Nouvelle fonction de rappel pour transmettre le dump reçu à Redux
 let onPatchReceivedCallback = null;
@@ -77,6 +78,32 @@ export const changeMidiInputPort = (portId) => {
     const inputs = Array.from(midiAccess.inputs.values());
     const target = inputs.find(port => port.id === portId);
     if (target) setupMidiInputListener(target);
+  });
+};
+
+export const changeKeyboardInputPort = (portId) => {
+  if (!navigator.requestMIDIAccess) return;
+
+  navigator.requestMIDIAccess({ sysex: true }).then((midiAccess) => {
+    const inputs = Array.from(midiAccess.inputs.values());
+    const target = inputs.find(port => port.id === portId);
+
+    if (selectedKeyboardInput) {
+      selectedKeyboardInput.onmidimessage = null;
+    }
+
+    selectedKeyboardInput = target;
+
+    if (selectedKeyboardInput) {
+      selectedKeyboardInput.onmidimessage = (event) => {
+        const data = Array.from(event.data);
+
+        if (selectedMidiOutput) {
+          selectedMidiOutput.send(data);
+          logMidiActivity('out', '🎹 THRU', data);
+        }
+      };
+    }
   });
 };
 
