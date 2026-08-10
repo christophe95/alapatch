@@ -1,5 +1,5 @@
 const EXPECTED_DUMP_LENGTH = 297;
-const MAX_DUMP_RETRIES = 10;
+const MAX_DUMP_RETRIES = 25;
 const DUMP_RETRY_DELAY = 300;
 
 let dumpRetryCount = 0;
