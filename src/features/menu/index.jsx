@@ -6,6 +6,7 @@ import {
   registerMidiLogger, 
   requestCurrentPatchDump, 
   requestAllDump,
+  changeKeyboardInputPort,
   registerPatchReceiver 
 } from '../../utils/midiHelper';
 import { Select } from '../utils/components';
@@ -35,6 +36,7 @@ export default function Menu(props) {
   const activeTab = useSelector((state) => state.parameters.activeTab);
   const dispatch = useDispatch();
   const reader = new FileReader();
+  const [activeKeyboardId, setActiveKeyboardId] = useState('');
 
   useEffect(() => {
     // 1. Initialisation des ports MIDI physiques au démarrage
@@ -181,7 +183,30 @@ export default function Menu(props) {
               )}
             </select>
           </div>
+
+
+          <div className="flex flex-col space-y-1">
+            <label className="text-xs font-bold text-gray-500 uppercase">Keyboard In :</label>
+            <select
+              value={activeKeyboardId}
+              onChange={(e) => {
+                setActiveKeyboardId(e.target.value);
+                changeKeyboardInputPort(e.target.value);
+              }}
+              className="w-full bg-white text-xs text-gray-800 px-1 py-1 rounded border border-gray-400"
+            >
+              <option value="">Aucun clavier</option>
+
+              {midiInputs.map(device => (
+                <option key={device.id} value={device.id}>
+                  {device.name}
+                </option>
+             ))}
+            </select>
+          </div>
         </div>
+
+
 
         {/* BLOC Patch Name */}
 
