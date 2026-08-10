@@ -144,17 +144,17 @@ export default function Menu(props) {
           </div>
       </div>
 
-        {/* BLOC DOUBLE SÉLECTEUR MIDI */}
+        {/* BLOC SÉLECTEURS MIDI */}
 
         <div className="my-1 flex flex-col space-y-3 bg-gray-100 p-2 rounded border border-gray-300">
-          <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">MIDI SELECTOR</label>
+
           <div className="flex flex-col space-y-1">
-            <label htmlFor="midi-out-select" className="text-xs font-bold text-gray-500 uppercase"> MIDI Out :</label>
+            <label htmlFor="midi-out-select" className="text-xs font-bold text-gray-500 uppercase">Out :</label>
             <select 
               id="midi-out-select"
               value={activeOutId}
               onChange={handleMidiOutChange}
-              className="w-full bg-white text-sm text-gray-800 px-2 py-1 rounded border border-gray-400 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-white text-sm text-gray-800 px-1 py-1 rounded border border-gray-400 focus:outline-none focus:border-indigo-500"
             >
               {midiOutputs.length === 0 ? (
                 <option value="">Aucune sortie trouvée</option>
@@ -167,12 +167,12 @@ export default function Menu(props) {
           </div>
 
           <div className="flex flex-col space-y-1">
-            <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase"> MIDI In :</label>
+            <label htmlFor="midi-in-select" className="text-xs font-bold text-gray-500 uppercase">In :</label>
             <select 
               id="midi-in-select"
               value={activeInId}
               onChange={handleMidiInChange}
-              className="w-full bg-white text-sm text-gray-800 px-2 py-1 rounded border border-gray-400 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-white text-sm text-gray-800 px-1 py-1 rounded border border-gray-400 focus:outline-none focus:border-indigo-500"
             >
               {midiInputs.length === 0 ? (
                 <option value="">Aucune entrée trouvée</option>
@@ -183,7 +183,6 @@ export default function Menu(props) {
               )}
             </select>
           </div>
-
 
           <div className="flex flex-col space-y-1">
             <label className="text-xs font-bold text-gray-500 uppercase">Keyboard In :</label>
@@ -205,8 +204,6 @@ export default function Menu(props) {
             </select>
           </div>
         </div>
-
-
 
         {/* BLOC Patch Name */}
 
