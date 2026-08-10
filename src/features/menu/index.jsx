@@ -37,6 +37,7 @@ export default function Menu(props) {
   const dispatch = useDispatch();
   const reader = new FileReader();
   const [activeKeyboardId, setActiveKeyboardId] = useState('');
+  const [keyboardChannel, setKeyboardChannel] = useState(1);
 
   useEffect(() => {
     // 1. Initialisation des ports MIDI physiques au démarrage
@@ -123,7 +124,7 @@ export default function Menu(props) {
 
   return (
 
-    <div className="h-screen col-span-1 flex flex-col justify-between border-solid border-r border-gray-300 bg-white px-2 py-2 text-xs">
+  <div className="h-screen col-span-1 flex flex-col justify-between border-solid border-r border-gray-300 bg-white px-2 py-2 text-xs">
       <div className="menu-patch-container">
 
       {/* 2 boutons Editor / Memory */}
@@ -144,9 +145,8 @@ export default function Menu(props) {
           </div>
       </div>
 
-        {/* BLOC SÉLECTEURS MIDI */}
-
-        <div className="my-1 flex flex-col space-y-3 bg-gray-100 p-2 rounded border border-gray-300">
+      {/* BLOC SÉLECTEURS MIDI */}
+      <div className="my-1 flex flex-col space-y-3 bg-gray-100 p-2 rounded border border-gray-300">
 
           <div className="flex flex-col space-y-1">
             <label htmlFor="midi-out-select" className="text-xs font-bold text-gray-500 uppercase">Out :</label>
@@ -184,26 +184,41 @@ export default function Menu(props) {
             </select>
           </div>
 
-          <div className="flex flex-col space-y-1">
-            <label className="text-xs font-bold text-gray-500 uppercase">Keyboard In :</label>
-            <select
-              value={activeKeyboardId}
-              onChange={(e) => {
-                setActiveKeyboardId(e.target.value);
-                changeKeyboardInputPort(e.target.value);
-              }}
-              className="w-full bg-white text-xs text-gray-800 px-1 py-1 rounded border border-gray-400"
-            >
-              <option value="">Aucun clavier</option>
-
-              {midiInputs.map(device => (
-                <option key={device.id} value={device.id}>
-                  {device.name}
-                </option>
-             ))}
-            </select>
+          <div className="grid grid-cols-3 gap-1">
+            <div className="col-span-2 flex flex-col space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">Keyboard In :</label>
+                <select
+                  value={activeKeyboardId}
+                  onChange={(e) => {
+                  setActiveKeyboardId(e.target.value);
+                  changeKeyboardInputPort(e.target.value, keyboardChannel);
+                  }}
+                  className="w-full bg-white text-xs px-1 py-1 rounded border border-gray-400"
+                >
+                  <option value="">Aucun clavier</option>
+                  {midiInputs.map(device => (
+                    <option key={device.id} value={device.id}>{device.name}</option>
+                  ))}
+                </select>
+            </div>
+            <div className="flex flex-col space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">Channel</label>
+              <select
+                value={keyboardChannel}
+                onChange={(e) => {
+                const channel = Number(e.target.value);
+                setKeyboardChannel(channel);
+                changeKeyboardInputPort(activeKeyboardId, channel);
+                }}
+                className="w-full bg-white text-xs px-1 py-1 rounded border border-gray-400"
+                >
+                {Array.from({ length: 16 }, (_, i) => (
+                 <option key={i + 1} value={i + 1}>{i + 1}</option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
+      </div>
 
         {/* BLOC Patch Name */}
 
