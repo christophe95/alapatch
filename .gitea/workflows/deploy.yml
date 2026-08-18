@@ -8,36 +8,37 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, linux]
+    # Rappel : votre exécuteur sur la VM .37 intercepte ce label pour lancer le conteneur de build
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
+      - name: Deploy via SSH (Non-Root Account)
         shell: bash
         run: |
-          echo "Démarrage de la connexion et réplication Git native..."
+          echo "Démarrage de la connexion sécurisée et réplication Git native..."
           
-          # Connexion du Runner vers le serveur applicatif 'home'
-          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home root@home.mesdonneesadministratives.fr "
-            cd /opt/alapatch &&
+          # Connexion du Runner vers le compte isolé 'deployer' de la VM applicative
+          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home deployer@192.168.199.37 "
+            cd /opt/home/alapatch &&
             
             echo '=> [1/4] Configuration du Remote avec la VRAIE URL SSH...' &&
-            # On applique l'adresse de l'hôte vm-dev identifiée
-            git remote set-url origin git@vm-dev.mesdonneesadministratives.fr:cvancau/alapatch.git || git remote add origin git@vm-dev.mesdonneesadministratives.fr:cvancau/alapatch.git &&
+            # On applique l'adresse de votre nouveau serveur Gitea local (.52)
+            git remote set-url origin git@192.168.199.52:cvancau/alapatch.git || git remote add origin git@192.168.199.52:cvancau/alapatch.git &&
             
-            echo '=> [2/4] Synchronisation Git avec la clé dédiée alapatch...' &&
-            git config core.sshCommand 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_alapatch' &&
+            echo '=> [2/4] Synchronisation Git avec la clé dédiée gitea...' &&
+            git config core.sshCommand 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /home/deployer/.ssh/id_gitea' &&
             git fetch --all &&
             git reset --hard origin/main &&
             git clean -fd &&
             
             echo '=> [3/4] Build de l-image Docker (Node 22 / Vite)...' &&
-            docker build -t alapatch-prod . &&
+            docker build -t alapatch-app . &&
             
             echo '=> [4/4] Recyclage du conteneur sur le port 4321...' &&
-            if [ \$(docker ps -aq -f name=microkorg-editor) ]; then
-              docker stop microkorg-editor && docker rm microkorg-editor;
+            if [ \$(docker ps -aq -f name=alapatch-app) ]; then
+              docker stop alapatch-app && docker rm alapatch-app &&
             fi &&
-            docker run -d --restart unless-stopped -p 4321:4321 --name microkorg-editor alapatch-prod &&
+            docker run -d --restart unless-stopped -p 4321:4321 --name alapatch-app alapatch-app &&
             
-            echo '=> Déploiement terminé avec succès !'
+            echo '=> Déploiement non-root terminé avec succès !'
           "
