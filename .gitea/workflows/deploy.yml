@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    # Rappel : votre exécuteur sur la VM .37 intercepte ce label pour lancer le conteneur de build v3
+    # Rappel : votre exécuteur sur la VM .37 intercepte ce label pour lancer le conteneur de build
     runs-on: ubuntu-latest
 
     steps:
