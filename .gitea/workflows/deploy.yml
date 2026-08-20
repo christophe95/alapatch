@@ -8,36 +8,45 @@ on:
 
 jobs:
   deploy:
-    # On force l'exécuteur à intercepter le Job
     runs-on: linux
 
     steps:
-      - name: Deploy via SSH (Non-Root Account)
-        shell: bash
+      - name: Install SSH client
+        shell: sh
         run: |
-          echo "Démarrage de la connexion sécurisée et réplication Git native..."
-          
-          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home deployer@192.168.199.37 "
-            cd /opt/home/alapatch &&
-            
-            echo '=> [1/4] Configuration du Remote...' &&
-            git remote set-url origin git@192.168.199.52:cvancau/alapatch.git || git remote add origin git@192.168.199.52:cvancau/alapatch.git &&
-            
-            echo '=> [2/4] Synchronisation Git...' &&
-            git config core.sshCommand 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /home/deployer/.ssh/id_gitea' &&
-            git fetch --all &&
-            git reset --hard origin/main &&
-            git clean -fd &&
-            
-            echo '=> [3/4] Build de l-image Docker (Node 22 / Vite)...' &&
-            docker build -t alapatch-app . &&
-            
-            echo '=> [4/4] Recyclage du conteneur sur le VRAI port 5001...' &&
-            if [ \$(docker ps -aq -f name=alapatch-app) ]; then
-              docker stop alapatch-app && docker rm alapatch-app;
-            fi &&
-            # Correction stricte des ports basée sur votre docker ps :
-            docker run -d --restart unless-stopped -p 5001:4321 --name alapatch-app alapatch-app &&
-            
-            echo '=> Déploiement non-root terminé avec succès !'
-          "
+          apk add --no-cache openssh-client
+
+      - name: Deploy via SSH
+        shell: sh
+        run: |
+          echo "Démarrage du déploiement..."
+
+          ssh \
+            -o StrictHostKeyChecking=no \
+            -o BatchMode=yes \
+            -i /root/.ssh/id_home \
+            deployer@192.168.199.37 '
+              set -e
+
+              cd /opt/home/alapatch
+
+              echo "=> [1/4] Synchronisation Git"
+              git fetch origin
+              git reset --hard origin/main
+              git clean -fd
+
+              echo "=> [2/4] Build Docker"
+              docker build -t alapatch-app .
+
+              echo "=> [3/4] Arrêt ancien conteneur"
+              docker rm -f alapatch-app 2>/dev/null || true
+
+              echo "=> [4/4] Démarrage application"
+              docker run -d \
+                --restart unless-stopped \
+                -p 5001:4321 \
+                --name alapatch-app \
+                alapatch-app
+
+              echo "=> Déploiement terminé"
+            '
