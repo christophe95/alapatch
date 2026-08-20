@@ -24,7 +24,7 @@ jobs:
           ssh \
             -o StrictHostKeyChecking=no \
             -o BatchMode=yes \
-            -i /root/.ssh/id_home \
+            -i /root/.ssh/id_gitea \
             deployer@192.168.199.37 '
               set -e
 
