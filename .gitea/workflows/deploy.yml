@@ -19,7 +19,7 @@ jobs:
       - name: Deploy via SSH
         shell: sh
         run: |
-          echo "Démarrage du déploiement..."
+          echo "Démarrage du déploiement alapatch..."
 
           ssh \
             -o StrictHostKeyChecking=no \
