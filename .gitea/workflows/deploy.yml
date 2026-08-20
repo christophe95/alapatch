@@ -8,22 +8,22 @@ on:
 
 jobs:
   deploy:
+    # On force l'exécuteur à intercepter le Job
     runs-on: ubuntu-latest
 
     steps:
       - name: Deploy via SSH (Non-Root Account)
         shell: bash
         run: |
-          echo "Démarrage de la réplication Git et du build local..."
+          echo "Démarrage de la connexion sécurisée et réplication Git native..."
           
-          # Connexion SSH locale vers le compte isolé 'deployer' de cette même VM
           ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /root/.ssh/id_home deployer@192.168.199.37 "
             cd /opt/home/alapatch &&
             
-            echo '=> [1/4] Configuration du Remote avec l-IP locale...' &&
+            echo '=> [1/4] Configuration du Remote...' &&
             git remote set-url origin git@192.168.199.52:cvancau/alapatch.git || git remote add origin git@192.168.199.52:cvancau/alapatch.git &&
             
-            echo '=> [2/4] Synchronisation Git avec la clé dédiée gitea...' &&
+            echo '=> [2/4] Synchronisation Git...' &&
             git config core.sshCommand 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /home/deployer/.ssh/id_gitea' &&
             git fetch --all &&
             git reset --hard origin/main &&
@@ -32,13 +32,12 @@ jobs:
             echo '=> [3/4] Build de l-image Docker (Node 22 / Vite)...' &&
             docker build -t alapatch-app . &&
             
-            echo '=> [4/4] Recyclage du conteneur sur le port 5000...' &&
+            echo '=> [4/4] Recyclage du conteneur sur le VRAI port 5001...' &&
             if [ \$(docker ps -aq -f name=alapatch-app) ]; then
               docker stop alapatch-app && docker rm alapatch-app;
             fi &&
-            # Lancement sur le port 5000 comme demandé
-            docker run -d --restart unless-stopped -p 5000:5000 --name alapatch-app alapatch-app &&
+            # Correction stricte des ports basée sur votre docker ps :
+            docker run -d --restart unless-stopped -p 5001:4321 --name alapatch-app alapatch-app &&
             
-            echo '=> Déploiement local terminé avec succès !'
+            echo '=> Déploiement non-root terminé avec succès !'
           "
-    
